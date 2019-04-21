@@ -1,5 +1,3 @@
-_init = 0x0000024 - 0x048e0000;
-_fini = 0x0000160 - 0x048e0000;
 __nnDetailNintendoSdkRuntimeObjectFileRefer = 0x00001AC - 0x048e0000;
 __nnDetailNintendoSdkRuntimeObjectFile = 0x00001B0 - 0x048e0000;
 __nnDetailNintendoSdkNsoFileRefer = 0x00001B4 - 0x048e0000;
