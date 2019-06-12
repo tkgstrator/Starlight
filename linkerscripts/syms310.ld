@@ -176198,6 +176198,7 @@ _ZN4sead7HeapMgr12sInstancePtrE = 0x48ACE88 - 0x48DF000;
 _ZN4sead7HeapMgr6sArenaE = 0x48ACE90 - 0x48DF000;
 _ZN4sead7HeapMgr13sDefaultArenaE = 0x48ACE98 - 0x48DF000;
 _ZN4sead7HeapMgr10sRootHeapsE = 0x48ACEB0 - 0x48DF000;
+_ZN4sead7HeapMgr13sRootHeapsPtrE = 0x48ACEB8 - 0x48DF000;
 _ZN4sead7HeapMgr17sIndependentHeapsE = 0x48ACEE0 - 0x48DF000;
 _ZN4sead7HeapMgr15sHeapTreeLockCSE = 0x48ACF10 - 0x48DF000;
 _ZN4sead7HeapMgr13sHeapCheckTagE = 0x48ACF50 - 0x48DF000;
