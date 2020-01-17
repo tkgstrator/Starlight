@@ -84,18 +84,6 @@ sudo make install3
 ```bash
 git clone https://github.com/switchbrew/libnx
 cd libnx
-vi nx/source/runtime/switch_crt0.s
-```
-edit line 93.
-```
-// before
-.word  0 // "offset to runtime-generated module object" (neither needed, used nor supported in homebrew)
-
-// after
-.word  __nx_module_runtime  - __nx_mod0
-```
-make & install.
-```bash
 make
 sudo make install DEVKITPRO=/opt/devkitpro
 ```
