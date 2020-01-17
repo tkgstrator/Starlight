@@ -105,6 +105,7 @@ sudo make install DEVKITPRO=/opt/devkitpro
 ```bash
 git clone https://github.com/tkgstrator/Starlight.git
 cd Starlight
+git checkout wip-menu
 make
 ```
 
