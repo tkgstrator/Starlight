@@ -45,6 +45,18 @@ dkp-pacman -Sy switch-dev
 ```
 and press enter.
 
+## Python3.7
+
+If you use ubuntu 16.04, you should add repository.
+
+```bash
+sudo apt update
+sudo apt install software-properties-common
+sudo add-apt-repository ppa:deadsnakes/ppa
+sudo apt update
+sudo apt install python3.7
+```
+
 ## keystone
 
 ```bash
