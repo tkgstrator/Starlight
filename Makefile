@@ -1,12 +1,12 @@
 # TODO (Khangaroo): Make this process a lot less hacky (no, export did not work)
 # See MakefileNSO
 
-.PHONY: all clean starlight send
+.PHONY: all clean starlight install 
 
 S2VER ?= 310
 S2VERSTR ?= 3.1.0
 S2ROMTYPE ?= US
-
+IP ?= 192.168.0.10
 all: starlight
 
 starlight:
@@ -18,7 +18,7 @@ starlight_patch_$(S2VER)/*.ips: patches/*.slpatch patches/configs/$(S2VER).confi
 	@rm -f starlight_patch_$(S2VER)/*.ips
 	python3 scripts/genPatch.py $(S2VER)
 
-send: all
+install: all
 	python3.7 scripts/sendPatch.py $(IP) $(S2ROMTYPE) $(S2VER)
 
 clean:
