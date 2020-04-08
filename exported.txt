@@ -1,6 +1,6 @@
 {
     global:
-        _Z16renderEntrypointPN3agl11DrawContextEPN4sead10TextWriterE;
+        _Z16renderEntrypointPN3agl11DrawContextEPN4sead10TextWriterEPjS5_;
         __custom_init;
         __custom_fini;
     local: *;
