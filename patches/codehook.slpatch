@@ -1,8 +1,13 @@
 [version=310, target=main]
 gsys::SystemTask::invokeDrawTV_+284 NOP // enable display debug stuff (which is used for hook)
 gsys::SystemTask::invokeDrawTV_+390:
-	MOV X1, X0
-	MOV X0, X25
-	BL renderEntrypoint
-	B #0x2B8
-	
+    MOV X1, X0
+    MOV X0, X25
+    ADRP X2, #0x29A4000 // CoopSetting
+    LDR X2, [X2, #0xE08]
+    LDR X2, [X2]
+    ADRP X3, #0x29A9000 // EnemyDirector
+    LDR X3, [X3, #0x740]
+    LDR X3, [X3]
+    BL renderEntrypoint
+    B #0x2A0

@@ -44,10 +44,10 @@
 #include "starlight/menu/popmenuentry.hpp"
 
 enum Modes {
-    NONE, FLY, EVENT_VIEWER, INPUT_VIEWER,  PLAYER_SWITCHER, PAINT_ALL, END
+    NONE, FLY, EVENT_VIEWER, INPUT_VIEWER, PLAYER_SWITCHER, PAINT_ALL, END
 };
 
-void renderEntrypoint(agl::DrawContext *drawContext, sead::TextWriter *textWriter);
+void renderEntrypoint(agl::DrawContext *drawContext, sead::TextWriter *textWriter, uint32_t *coopSetting, uint32_t *enemyDirector);
 
 void allocHeap();
 
