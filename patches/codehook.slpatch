@@ -6,8 +6,8 @@ gsys::SystemTask::invokeDrawTV_+390:
     ADRP X2, #0x29A4000 // CoopSetting
     LDR X2, [X2, #0xE08]
     LDR X2, [X2]
-    ADRP X3, #0x29A9000 // EnemyDirector
-    LDR X3, [X3, #0x740]
+    ADRP X3, #0x29AB000 // EventDiretor
+    LDR X3, [X3, #0xBC0]
     LDR X3, [X3]
     BL renderEntrypoint
     B #0x2A0

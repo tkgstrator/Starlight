@@ -10,18 +10,31 @@ extern "C" void __custom_fini(void) {}
 
 static agl::DrawContext *mDrawContext;
 static sead::TextWriter *mTextWriter;
+static uint32_t *mCoopSetting;
+static Lp::Sys::Actor *mActor;
+static Game::Coop::EventGeyser *mEventGeyser;
+static Game::Coop::EventDirector *mEventDirector;
 static sead::ExpHeap *mStarlightHeap;
 static View *mView;
 static int mode;
 static bool showMenu;
 
-void renderEntrypoint(agl::DrawContext *drawContext, sead::TextWriter *textWriter, uint32_t *coopSetting, uint32_t *enemyDirector)
+uint32_t readU32(uint32_t* p, uint32_t offset)
+{
+    uint32_t res;
+    asm volatile("LDR %[result], [%[base], %[offset]]": [result]"=r"(res): [base]"r"(p), [offset]"r"(offset) :);
+    return res;
+}
+
+void renderEntrypoint(agl::DrawContext *drawContext, sead::TextWriter *textWriter, uint32_t *coopSetting, Game::Coop::EventDirector *mEventDirector)
 {
     mDrawContext = drawContext;
     mTextWriter = textWriter;
+    mCoopSetting = coopSetting;
+    mEventDirector = mEventDirector;
 
     mTextWriter->mColor = sead::Color4f::cWhite;
-
+    
     Collector::init();
     Collector::collect();
 
@@ -29,9 +42,6 @@ void renderEntrypoint(agl::DrawContext *drawContext, sead::TextWriter *textWrite
         allocHeap();
     if (mStarlightHeap != NULL)
         Collector::mHeapMgr->setCurrentHeap_(mStarlightHeap);
-
-    //if(Collector::mController.isPressed(Controller::Buttons::Minus1))
-    //    showMenu = !showMenu;
 
     static bool init = false;
     if (!init)
@@ -53,6 +63,24 @@ void renderEntrypoint(agl::DrawContext *drawContext, sead::TextWriter *textWrite
 
     textWriter->printf("Current heap name: %s\n", Collector::mHeapMgr->getCurrentHeap()->mName.mCharPtr);
     textWriter->printf("Current heap free space: 0x%x\n", Collector::mHeapMgr->getCurrentHeap()->getFreeSize());
+
+    // Display Coop Setting
+    if (mCoopSetting != NULL)
+    {
+        uint32_t *that = mCoopSetting;
+        textWriter->printf("Coop Current WAVE: Tide: %d Event: %d\n", that[1338], that[1341]);
+        for (int loop = 0; loop < 3; loop++) {
+            uint32_t tide = readU32(that, 0x14 * loop + 0x1510);
+            uint32_t event = readU32(that, 0x14 * loop + 0x151C);
+            textWriter->printf("WAVE %d Tide: %d Event: %d\n", loop + 1, tide, event);
+        }
+    }
+
+    if (mEventDirector != NULL) {
+        mEventGeyser = mEventDirector->eventGeyser;
+        textWriter->printf("Event Geyser: %08X, %08X\n", mEventGeyser->random1, mEventGeyser->random2);
+        textWriter->printf("Geyser Info: %d %d\n", mEventGeyser->ptrArray[0], mEventGeyser->ptrArray->mLength);
+    }
 
     mView->update();
     mView->render(mTextWriter);

@@ -35,6 +35,9 @@
 #include "Game/PlayerMgr.h"
 #include "Game/MainMgr.h"
 #include "Game/PaintUtl.h"
+#include "Game/Coop/Utl.h"
+#include "Game/Coop/Setting.h"
+#include "Game/Coop/EventGeyser.h"
 #include "MiniGame/gfx.h"
 #include "aal/debugdrawer.h"
 #include "ModuleObject.hpp"
@@ -47,7 +50,7 @@ enum Modes {
     NONE, FLY, EVENT_VIEWER, INPUT_VIEWER, PLAYER_SWITCHER, PAINT_ALL, END
 };
 
-void renderEntrypoint(agl::DrawContext *drawContext, sead::TextWriter *textWriter, uint32_t *coopSetting, uint32_t *enemyDirector);
+void renderEntrypoint(agl::DrawContext *drawContext, sead::TextWriter *textWriter, uint32_t *coopSetting, Game::Coop::EventGeyser *eventGeyser);
 
 void allocHeap();
 

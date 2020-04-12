@@ -6,7 +6,7 @@
 S2VER ?= 310
 S2VERSTR ?= 3.1.0
 S2ROMTYPE ?= US
-IP ?= 192.168.0.10
+IP ?= 192.168.0.14
 all: starlight
 
 starlight:
