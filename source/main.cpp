@@ -11,6 +11,8 @@ extern "C" void __custom_fini(void) {}
 static agl::DrawContext *mDrawContext;
 static sead::TextWriter *mTextWriter;
 static uint32_t *mCoopSetting;
+static uint64_t first;
+static uint64_t offset;
 static Lp::Sys::Actor *mActor;
 static Game::Coop::EventGeyser *mEventGeyser;
 static Game::Coop::EventDirector *mEventDirector;
@@ -18,11 +20,15 @@ static sead::ExpHeap *mStarlightHeap;
 static View *mView;
 static int mode;
 static bool showMenu;
+static bool flg = true;
 
-uint32_t readU32(uint32_t* p, uint32_t offset)
+uint32_t readU32(uint32_t *p, uint32_t offset)
 {
     uint32_t res;
-    asm volatile("LDR %[result], [%[base], %[offset]]": [result]"=r"(res): [base]"r"(p), [offset]"r"(offset) :);
+    asm volatile("LDR %[result], [%[base], %[offset]]"
+                 : [ result ] "=r"(res)
+                 : [ base ] "r"(p), [ offset ] "r"(offset)
+                 :);
     return res;
 }
 
@@ -34,7 +40,7 @@ void renderEntrypoint(agl::DrawContext *drawContext, sead::TextWriter *textWrite
     mEventDirector = mEventDirector;
 
     mTextWriter->mColor = sead::Color4f::cWhite;
-    
+
     Collector::init();
     Collector::collect();
 
@@ -68,18 +74,44 @@ void renderEntrypoint(agl::DrawContext *drawContext, sead::TextWriter *textWrite
     if (mCoopSetting != NULL)
     {
         uint32_t *that = mCoopSetting;
-        textWriter->printf("Coop Current WAVE: Tide: %d Event: %d\n", that[1338], that[1341]);
-        for (int loop = 0; loop < 3; loop++) {
+        // textWriter->printf("Coop Current WAVE: Tide: %d Event: %d\n", that[1338], that[1341]);
+        for (int loop = 0; loop < 3; loop++)
+        {
             uint32_t tide = readU32(that, 0x14 * loop + 0x1510);
             uint32_t event = readU32(that, 0x14 * loop + 0x151C);
             textWriter->printf("WAVE %d Tide: %d Event: %d\n", loop + 1, tide, event);
         }
     }
 
-    if (mEventDirector != NULL) {
+    if (mEventDirector != NULL)
+    {
         mEventGeyser = mEventDirector->eventGeyser;
-        textWriter->printf("Event Geyser: %08X, %08X\n", mEventGeyser->random1, mEventGeyser->random2);
-        textWriter->printf("Geyser Info: %d %d\n", mEventGeyser->ptrArray[0], mEventGeyser->ptrArray->mLength);
+        if (Game::Coop::Utl::GetEventType() == 2)
+        {
+            sead::PtrArrayImpl geyser = mEventGeyser->ptrArray;
+            textWriter->printf("Random Seed1: %08X %08X %08X %08X\n", mEventGeyser->random1.mSeed1, mEventGeyser->random1.mSeed2, mEventGeyser->random1.mSeed3, mEventGeyser->random1.mSeed4);
+            textWriter->printf("Random Seed2: %08X %08X %08X %08X\n", mEventGeyser->random2.mSeed1, mEventGeyser->random2.mSeed2, mEventGeyser->random2.mSeed3, mEventGeyser->random2.mSeed4);
+            textWriter->printf("Geyser Array: %d\n", geyser.mLength);
+            uint64_t *ptr = geyser.ptr;
+            // uint64_t succ = (uint64_t)(ptr[0]);
+
+            if (flg && geyser.mLength > 0) { // Get Offset and First Address 
+                first = (uint64_t)(ptr[0]);
+                offset = (uint64_t)(ptr[1]) - (uint64_t)(ptr[0]);
+                flg = false;
+            }
+
+            textWriter->printf("Pointer: %08X %08X\n", first, offset);
+
+            for (int i = 0; i < geyser.mLength; i++)
+            {
+                uint32_t diff = (uint64_t)ptr[i] - first;
+                if (diff == 0)
+                    textWriter->printf("%8X %8P %X\n", ptr[i], &ptr[i], 0);
+                if (diff >= offset)
+                    textWriter->printf("%8X %8P %X\n", ptr[i], &ptr[i], ((uint64_t)ptr[i] - first - offset + 0x900) / 0x900);
+            }
+        }
     }
 
     mView->update();

@@ -20,14 +20,15 @@ public:
   _BYTE gap[0x398];
   sead::Random random1;
   sead::Random random2;
-  sead::PtrArrayImpl *ptrArray;
+  sead::PtrArrayImpl ptrArray;
 };
 
 class EventDirector : Cmn::Actor
 {
   public:
-  sead::IDisposer disopser;
-  void* eventNone;
+  sead::IDisposer disposer;
+  _BYTE eventNone[0x8];
+  _BYTE eventRush[0x8];
   Game::Coop::EventGeyser *eventGeyser;
 };
 }; // namespace Coop
