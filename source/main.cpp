@@ -1,5 +1,7 @@
 #include "main.hpp"
+#include <vector>
 
+#define N 9
 using namespace starlight;
 
 // Needed on old versions of rtld that doesn't check for DT_INIT existance.
@@ -21,6 +23,8 @@ static View *mView;
 static int mode;
 static bool showMenu;
 static bool flg = true;
+static uint32_t dist[N][N];
+static sead::Vector2<float> fontSize;
 
 uint32_t readU32(uint32_t *p, uint32_t offset)
 {
@@ -39,7 +43,10 @@ void renderEntrypoint(agl::DrawContext *drawContext, sead::TextWriter *textWrite
     mCoopSetting = coopSetting;
     mEventDirector = mEventDirector;
 
+    // Setting mTextWriter
+    fontSize.mX = fontSize.mY = 1.5;
     mTextWriter->mColor = sead::Color4f::cWhite;
+    mTextWriter->mScale = fontSize;
 
     Collector::init();
     Collector::collect();
@@ -67,8 +74,8 @@ void renderEntrypoint(agl::DrawContext *drawContext, sead::TextWriter *textWrite
         init = true;
     }
 
-    textWriter->printf("Current heap name: %s\n", Collector::mHeapMgr->getCurrentHeap()->mName.mCharPtr);
-    textWriter->printf("Current heap free space: 0x%x\n", Collector::mHeapMgr->getCurrentHeap()->getFreeSize());
+    // textWriter->printf("Current heap name: %s\n", Collector::mHeapMgr->getCurrentHeap()->mName.mCharPtr);
+    // textWriter->printf("Current heap free space: 0x%x\n", Collector::mHeapMgr->getCurrentHeap()->getFreeSize());
 
     // Display Coop Setting
     if (mCoopSetting != NULL)
@@ -79,7 +86,7 @@ void renderEntrypoint(agl::DrawContext *drawContext, sead::TextWriter *textWrite
         {
             uint32_t tide = readU32(that, 0x14 * loop + 0x1510);
             uint32_t event = readU32(that, 0x14 * loop + 0x151C);
-            textWriter->printf("WAVE %d Tide: %d Event: %d\n", loop + 1, tide, event);
+            textWriter->printf("WAVE%d Tide: %d Event: %d\n", loop + 1, tide, event);
         }
     }
 
@@ -91,11 +98,10 @@ void renderEntrypoint(agl::DrawContext *drawContext, sead::TextWriter *textWrite
             sead::PtrArrayImpl geyser = mEventGeyser->ptrArray;
             textWriter->printf("Random Seed1: %08X %08X %08X %08X\n", mEventGeyser->random1.mSeed1, mEventGeyser->random1.mSeed2, mEventGeyser->random1.mSeed3, mEventGeyser->random1.mSeed4);
             textWriter->printf("Random Seed2: %08X %08X %08X %08X\n", mEventGeyser->random2.mSeed1, mEventGeyser->random2.mSeed2, mEventGeyser->random2.mSeed3, mEventGeyser->random2.mSeed4);
-            textWriter->printf("Geyser Array: %d\n", geyser.mLength);
+            
             uint64_t *ptr = geyser.ptr;
-            // uint64_t succ = (uint64_t)(ptr[0]);
-
-            if (flg && geyser.mLength > 0) { // Get Offset and First Address 
+            Game::Coop::SpawnGeyser **arr = (Game::Coop::SpawnGeyser **) geyser.ptr;
+            if (flg) { // Get Offset and First Address 
                 first = (uint64_t)(ptr[0]);
                 offset = (uint64_t)(ptr[1]) - (uint64_t)(ptr[0]);
                 flg = false;
@@ -111,7 +117,39 @@ void renderEntrypoint(agl::DrawContext *drawContext, sead::TextWriter *textWrite
                 if (diff >= offset)
                     textWriter->printf("%8X %8P %X\n", ptr[i], &ptr[i], ((uint64_t)ptr[i] - first - offset + 0x900) / 0x900);
             }
+
+            for (int i = 0; i < geyser.mLength; i++)
+            {
+                Game::Coop::SpawnGeyser *str = arr[i];
+                for (int j = 0; j < geyser.mLength; j++)
+                {
+                Game::Coop::SpawnGeyser *dis = arr[j];
+                dist[i][j] = (uint32_t)sqrt(pow((str->vector.mX - dis->vector.mX), 2) + pow((str->vector.mY - dis->vector.mY), 2) + pow((str->vector.mZ - dis->vector.mZ), 2));
+                }
+                switch (geyser.mLength) {
+                    case 4:
+                        textWriter->printf("%03d %03d %03d %03d\n", dist[i][0], dist[i][1], dist[i][2], dist[i][3]);
+                        break;
+                    case 5:
+                        textWriter->printf("%03d %03d %03d %03d %03d\n", dist[i][0], dist[i][1], dist[i][2], dist[i][3], dist[i][4]);
+                        break;
+                    case 6:
+                        textWriter->printf("%03d %03d %03d %03d %03d %03d\n", dist[i][0], dist[i][1], dist[i][2], dist[i][3], dist[i][4], dist[i][5]);
+                        break;
+                    case 7:
+                        textWriter->printf("%03d %03d %03d %03d %03d %03d %03d\n", dist[i][0], dist[i][1], dist[i][2], dist[i][3], dist[i][4], dist[i][5], dist[i][6]);
+                        break;
+                    case 8:
+                        textWriter->printf("%03d %03d %03d %03d %03d %03d %03d %03d\n", dist[i][0], dist[i][1], dist[i][2], dist[i][3], dist[i][4], dist[i][5], dist[i][6], dist[i][7]);
+                        break;
+                    case 9:
+                        textWriter->printf("%03d %03d %03d %03d %03d %03d %03d %03d %03d\n", dist[i][0], dist[i][1], dist[i][2], dist[i][3], dist[i][4], dist[i][5], dist[i][6], dist[i][7], dist[i][8]);
+                        break;
+                }
+            }
         }
+    } else {
+        flg = true;
     }
 
     mView->update();

@@ -10,6 +10,8 @@ IP ?= 192.168.0.14
 all: starlight
 
 starlight:
+	$(MAKE) clean -f MakefileNSO
+	@rm -fr starlight_patch_*
 	$(MAKE) all -f MakefileNSO S2VER=$(S2VER) S2VERSTR=$(S2VERSTR)
 	$(MAKE) starlight_patch_$(S2VER)/*.ips
 
