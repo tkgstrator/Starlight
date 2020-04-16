@@ -12,7 +12,7 @@ extern "C" void __custom_fini(void) {}
 
 static agl::DrawContext *mDrawContext;
 static sead::TextWriter *mTextWriter;
-static uint32_t *mCoopSetting;
+static Game::Coop::Setting *mCoopSetting;
 static uint64_t first;
 static uint64_t offset;
 static Lp::Sys::Actor *mActor;
@@ -36,12 +36,12 @@ uint32_t readU32(uint32_t *p, uint32_t offset)
     return res;
 }
 
-void renderEntrypoint(agl::DrawContext *drawContext, sead::TextWriter *textWriter, uint32_t *coopSetting, Game::Coop::EventDirector *mEventDirector)
+void renderEntrypoint(agl::DrawContext *drawContext, sead::TextWriter *textWriter, Game::Coop::Setting *coopSetting, Game::Coop::EventDirector *eventDirector)
 {
     mDrawContext = drawContext;
     mTextWriter = textWriter;
     mCoopSetting = coopSetting;
-    mEventDirector = mEventDirector;
+    mEventDirector = eventDirector;
 
     // Setting mTextWriter
     fontSize.mX = fontSize.mY = 1.5;
@@ -80,14 +80,23 @@ void renderEntrypoint(agl::DrawContext *drawContext, sead::TextWriter *textWrite
     // Display Coop Setting
     if (mCoopSetting != NULL)
     {
-        uint32_t *that = mCoopSetting;
-        // textWriter->printf("Coop Current WAVE: Tide: %d Event: %d\n", that[1338], that[1341]);
-        for (int loop = 0; loop < 3; loop++)
+        textWriter->printf("Prev Tide: %X Event: %X\n", mCoopSetting->prev.tide, mCoopSetting->prev.event);
+        textWriter->printf("Next Tide: %X Event: %X\n", mCoopSetting->next.tide, mCoopSetting->next.event);
+        for (int i = 0; i < 3; i++)
         {
-            uint32_t tide = readU32(that, 0x14 * loop + 0x1510);
-            uint32_t event = readU32(that, 0x14 * loop + 0x151C);
-            textWriter->printf("WAVE%d Tide: %d Event: %d\n", loop + 1, tide, event);
+            textWriter->printf("WAVE%d Tide: %X Event: %X\n", i + 1, mCoopSetting->wave[i].tide, mCoopSetting->wave[i].event);
         }
+        // textWriter->printf("WAVE1 Pointer: %X Tide: %d Event: %d\n", &mCoopSetting->wave1, mCoopSetting->wave1.tide, mCoopSetting->wave1.event);
+        // textWriter->printf("WAVE2 Pointer: %X Tide: %d Event: %d\n", &mCoopSetting->wave2, mCoopSetting->wave2.tide, mCoopSetting->wave2.event);
+        // textWriter->printf("Coop Current WAVE: Tide: %d Event: %d\n", that[1338], that[1341]);
+        // for (int loop = 0; loop < 3; loop++)
+        // {
+        //     textWriter->printf("WAVE%d Tide: %d Event: %d\n", loop + 1, mCoopSetting->wave[loop].tide, mCoopSetting->wave[loop].event);
+
+        //     // uint32_t tide = readU32(that, 0x14 * loop + 0x1510);
+        //     // uint32_t event = readU32(that, 0x14 * loop + 0x151C);
+        //     // textWriter->printf("WAVE%d Tide: %d Event: %d\n", loop + 1, tide, event);
+        // }
     }
 
     if (mEventDirector != NULL)
