@@ -1,5 +1,4 @@
 #include "main.hpp"
-#include <vector>
 
 #define N 9
 using namespace starlight;
@@ -18,12 +17,15 @@ static uint64_t offset;
 static Lp::Sys::Actor *mActor;
 static Game::Coop::EventGeyser *mEventGeyser;
 static Game::Coop::EventDirector *mEventDirector;
+static Game::Coop::PlayerDirector *mPlayerDirector;
 static sead::ExpHeap *mStarlightHeap;
 static View *mView;
 static int mode;
 static bool showMenu;
+static uint32_t state;
 static bool flg = true;
 static uint32_t dist[N][N];
+static uint32_t count[N][N] = {0};
 static sead::Vector2<float> fontSize;
 
 uint32_t readU32(uint32_t *p, uint32_t offset)
@@ -36,12 +38,18 @@ uint32_t readU32(uint32_t *p, uint32_t offset)
     return res;
 }
 
-void renderEntrypoint(agl::DrawContext *drawContext, sead::TextWriter *textWriter, Game::Coop::Setting *coopSetting, Game::Coop::EventDirector *eventDirector)
+uint32_t getGeyserPos(uint64_t pos, uint64_t first) {
+    if (pos == first || pos == 0) return 65;
+    return (pos - first - 0x6B0) / 0x900 + 65;
+}
+
+void renderEntrypoint(agl::DrawContext *drawContext, sead::TextWriter *textWriter, Game::Coop::Setting *coopSetting, Game::Coop::EventDirector *eventDirector, Game::Coop::PlayerDirector *playerDirector)
 {
     mDrawContext = drawContext;
     mTextWriter = textWriter;
     mCoopSetting = coopSetting;
     mEventDirector = eventDirector;
+    mPlayerDirector = playerDirector;
 
     // Setting mTextWriter
     fontSize.mX = fontSize.mY = 1.5;
@@ -86,74 +94,56 @@ void renderEntrypoint(agl::DrawContext *drawContext, sead::TextWriter *textWrite
         {
             textWriter->printf("WAVE%d Tide: %X Event: %X\n", i + 1, mCoopSetting->wave[i].tide, mCoopSetting->wave[i].event);
         }
-        // textWriter->printf("WAVE1 Pointer: %X Tide: %d Event: %d\n", &mCoopSetting->wave1, mCoopSetting->wave1.tide, mCoopSetting->wave1.event);
-        // textWriter->printf("WAVE2 Pointer: %X Tide: %d Event: %d\n", &mCoopSetting->wave2, mCoopSetting->wave2.tide, mCoopSetting->wave2.event);
-        // textWriter->printf("Coop Current WAVE: Tide: %d Event: %d\n", that[1338], that[1341]);
-        // for (int loop = 0; loop < 3; loop++)
-        // {
-        //     textWriter->printf("WAVE%d Tide: %d Event: %d\n", loop + 1, mCoopSetting->wave[loop].tide, mCoopSetting->wave[loop].event);
-
-        //     // uint32_t tide = readU32(that, 0x14 * loop + 0x1510);
-        //     // uint32_t event = readU32(that, 0x14 * loop + 0x151C);
-        //     // textWriter->printf("WAVE%d Tide: %d Event: %d\n", loop + 1, tide, event);
-        // }
+        if (mPlayerDirector != NULL)
+        {
+            Game::Coop::Player player = mPlayerDirector->player[0];
+            textWriter->printf("Power: %04d Got: %s Round %03d Total: %03d\n", player.mRoundBankedPowerIkuraNum, (player.mGotGoldenIkuraNum ? "True" : "False"), player.mRoundBankedGoldenIkuraNum, player.mTotalBankedGoldenIkuraNum);
+        }
     }
 
+    // Display Event Geyser
     if (mEventDirector != NULL)
     {
         mEventGeyser = mEventDirector->eventGeyser;
         if (Game::Coop::Utl::GetEventType() == 2)
         {
             sead::PtrArrayImpl geyser = mEventGeyser->ptrArray;
+            uint64_t *ptr = mEventGeyser->ptrArray.ptr;
             textWriter->printf("Random Seed1: %08X %08X %08X %08X\n", mEventGeyser->random1.mSeed1, mEventGeyser->random1.mSeed2, mEventGeyser->random1.mSeed3, mEventGeyser->random1.mSeed4);
             textWriter->printf("Random Seed2: %08X %08X %08X %08X\n", mEventGeyser->random2.mSeed1, mEventGeyser->random2.mSeed2, mEventGeyser->random2.mSeed3, mEventGeyser->random2.mSeed4);
-            
-            uint64_t *ptr = geyser.ptr;
-            Game::Coop::SpawnGeyser **arr = (Game::Coop::SpawnGeyser **) geyser.ptr;
+            // Game::Coop::SpawnGeyser **arr = (Game::Coop::SpawnGeyser **) geyser.ptr;
             if (flg) { // Get Offset and First Address 
-                first = (uint64_t)(ptr[0]);
-                offset = (uint64_t)(ptr[1]) - (uint64_t)(ptr[0]);
+                first = (uint64_t)ptr[0];
+                offset = (uint64_t)ptr[1] - first;
                 flg = false;
+                state = mEventGeyser->random1.mSeed1;
             }
 
-            textWriter->printf("Pointer: %08X %08X\n", first, offset);
-
-            for (int i = 0; i < geyser.mLength; i++)
-            {
-                uint32_t diff = (uint64_t)ptr[i] - first;
-                if (diff == 0)
-                    textWriter->printf("%8X %8P %X\n", ptr[i], &ptr[i], 0);
-                if (diff >= offset)
-                    textWriter->printf("%8X %8P %X\n", ptr[i], &ptr[i], ((uint64_t)ptr[i] - first - offset + 0x900) / 0x900);
+            textWriter->printf("Succ: %c Goal: %c\n", getGeyserPos((uint64_t)ptr[0], first), getGeyserPos((uint64_t)(mEventGeyser->goalPos), first));
+            uint32_t mX = getGeyserPos((uint64_t)ptr[0], first) - 65;
+            uint32_t mY = getGeyserPos((uint64_t)(mEventGeyser->goalPos), first) - 65;
+            if ((mX + mY != 0) && mEventGeyser->random1.mSeed1 != state) {
+                count[mX][mY] += 1;
+                state = mEventGeyser->random1.mSeed1;
             }
 
-            for (int i = 0; i < geyser.mLength; i++)
+            for (int i = 0; i < 7; i++)
             {
-                Game::Coop::SpawnGeyser *str = arr[i];
-                for (int j = 0; j < geyser.mLength; j++)
+                if (geyser.mLength == 5)
                 {
-                Game::Coop::SpawnGeyser *dis = arr[j];
-                dist[i][j] = (uint32_t)sqrt(pow((str->vector.mX - dis->vector.mX), 2) + pow((str->vector.mY - dis->vector.mY), 2) + pow((str->vector.mZ - dis->vector.mZ), 2));
+                    textWriter->printf("%02d %02d %02d %02d %02d %02d %02d %02d %02d\n", count[i][0], count[i][1], count[i][2], count[i][3], count[i][4], count[i][5], count[i][6], count[i][7], count[i][8]);
                 }
-                switch (geyser.mLength) {
-                    case 4:
-                        textWriter->printf("%03d %03d %03d %03d\n", dist[i][0], dist[i][1], dist[i][2], dist[i][3]);
-                        break;
-                    case 5:
-                        textWriter->printf("%03d %03d %03d %03d %03d\n", dist[i][0], dist[i][1], dist[i][2], dist[i][3], dist[i][4]);
-                        break;
-                    case 6:
-                        textWriter->printf("%03d %03d %03d %03d %03d %03d\n", dist[i][0], dist[i][1], dist[i][2], dist[i][3], dist[i][4], dist[i][5]);
-                        break;
-                    case 7:
-                        textWriter->printf("%03d %03d %03d %03d %03d %03d %03d\n", dist[i][0], dist[i][1], dist[i][2], dist[i][3], dist[i][4], dist[i][5], dist[i][6]);
-                        break;
-                    case 8:
-                        textWriter->printf("%03d %03d %03d %03d %03d %03d %03d %03d\n", dist[i][0], dist[i][1], dist[i][2], dist[i][3], dist[i][4], dist[i][5], dist[i][6], dist[i][7]);
-                        break;
-                    case 9:
-                        textWriter->printf("%03d %03d %03d %03d %03d %03d %03d %03d %03d\n", dist[i][0], dist[i][1], dist[i][2], dist[i][3], dist[i][4], dist[i][5], dist[i][6], dist[i][7], dist[i][8]);
-                        break;
+                if (geyser.mLength == 7)
+                {
+                    textWriter->printf("%02d %02d %02d %02d %02d %02d %02d\n", count[i][0], count[i][1], count[i][2], count[i][3], count[i][4], count[i][5], count[i][6]);
+                }
+                if (geyser.mLength == 8)
+                {
+                    textWriter->printf("%02d %02d %02d %02d %02d %02d %02d %02d\n", count[i][0], count[i][1], count[i][2], count[i][3], count[i][4], count[i][5], count[i][6], count[i][7]);
+                }
+                if (geyser.mLength == 9)
+                {
+                    textWriter->printf("%02d %02d %02d %02d %02d %02d %02d %02d %02d\n", count[i][0], count[i][1], count[i][2], count[i][3], count[i][4], count[i][5], count[i][6], count[i][7], count[i][8]);
                 }
             }
         }

@@ -9,5 +9,8 @@ gsys::SystemTask::invokeDrawTV_+390:
     ADRP X3, #0x29AB000 // EventDiretor
     LDR X3, [X3, #0xBC0]
     LDR X3, [X3]
+    ADRP X4, #0x29A9000 // PlayerDirector
+    LDR X4, [X4, #0xDB8]
+    LDR X4, [X4]
     BL renderEntrypoint
-    B #0x2A0
+    B #0x294
