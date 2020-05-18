@@ -21,6 +21,11 @@ For Ubuntu 18.94 on WSL2(Windows Subsystem for Linux 2) or native like Linux ope
  - Ubuntu 18.04 (with Python3)
  - Windows 10 (above build id 18917)
  - Unpatched Nintendo Switch (enable FTP over port 5000)
+ - Splatoon 2 v1441792(3.1.0) (Any region) 
+   - Otherwise pseudo 3.1.0 using LFS(Layered File System) [Ref: below article]
+   
+> [How to work Starlight for Splatoon 2 any version.(Japanese)](https://tkgstrator.work/?p=27445)
+
 
 # Installation for Windows
 
