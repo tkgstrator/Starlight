@@ -115,7 +115,7 @@ sudo apt upgrade
 sudo apt install python3
 ```
 
-Clone Starlight and checkout wip-menu.
+Clone Starlight.
 
 ```bash
 git clone https://github.com/tkgstrator/Starlight.git
@@ -152,7 +152,6 @@ IP ?= 192.168.0.22 # IP address for Nintendo Switch
 |TrialEU   |US Demo '19|Not supported|
 |TrialJP20 |JP Demo '20|0100998011330000|
 |TrialUS20 |US Demo '20|01002120116C4000|
-|TrialEU20 |EU Demo '20|01009240116CC000|
 |TrialEU20 |EU Demo '20|01009240116CC000|
 |ShowFloor |N/A|Not supported|
 |ShowDL |Testfire|010000A00218E000|
