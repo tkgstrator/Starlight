@@ -156,7 +156,7 @@ IP ?= 192.168.0.22 # IP address for Nintendo Switch
 make # Build Starlight by Docker container
 make clean # Only supported for Docker container
 make starlight # Only supported for Docker container
-make install # Send IPS patch and subsdk0 to Nintendo Switch
+make install # Build Starlight, send IPS patch and subsdk0 to Nintendo Switch (Recommend)
 ```
 
 # Credits
