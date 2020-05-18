@@ -10,6 +10,10 @@
 #include "types.h"
 #include "sead/heap.h"
 
+// Nintendo didn't implement these for some reason
+void* operator new(std::size_t size, void*);
+void* operator new[](std::size_t size, void*);
+
 void* operator new(std::size_t size);
 void* operator new[](std::size_t size);
 void* operator new(std::size_t size, std::nothrow_t const &);

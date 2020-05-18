@@ -38,9 +38,10 @@ namespace sead
         void uniq(s32 (*)(void const *, void const *));
         s32 binarySearch(void const *, s32 (*)(void const *, void const *)) const;
 
-        u32 mLength;
-        s32 mBufferSize; // _4
-        void* mBuffer; // _8
+        u32 mLength; //0x3B8
+        u64 *ptr; // 0x3C0
+        s32 mBufferSize; // _4 ?
+        void* mBuffer; // _8 ?
     };
 
     template<typename T>
