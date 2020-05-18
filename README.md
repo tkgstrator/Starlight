@@ -1,7 +1,8 @@
 # Starlight
+
 An enviroment for linking to Splatoon 2 executable and implementing hooks.
 
-# Active contributors
+## Active contributors
 [@shibbo](https://github.com/shibbo) - Repo based on their work on OdysseyReversed
 
 [@Thog](https://github.com/Thog) - Expertise in how rtld is implemented
@@ -14,103 +15,18 @@ An enviroment for linking to Splatoon 2 executable and implementing hooks.
 
 [@Random0666](https://github.com/random0666) -  Expertise in Splatoon 2's inner workings
 
-# Installation
-
-For Ubuntu 16.04 / 18.04 on WSL(Windows Subsystem for Linux)
-
-## devkitpro
-
-```bash
-wget https://github.com/devkitPro/pacman/releases/download/devkitpro-pacman-1.0.1/devkitpro-pacman.deb
-sudo dpkg -i devkitpro-pacman.deb
-```
-
-```bash
-vi ~/.bash_profile
-```
-add system environment.
-```bash
-export DEVKITPRO=/opt/devkitpro
-export DEVKITARM=${DEVKITPRO}/devkitARM
-export DEVKITPPC=${DEVKITPRO}/devkitPPC
-export PATH=${DEVKITPRO}/tools/bin:$PATH
-```
-apply it.
-```bash
-source ~/.bash_profile
-```
-download database.
-```bash
-dkp-pacman -Sy switch-dev
-```
-and press enter.
-
-## Python3.7
-
-If you use ubuntu 16.04, you should add repository.
-
-```bash
-sudo apt update
-sudo apt install software-properties-common
-sudo add-apt-repository ppa:deadsnakes/ppa
-sudo apt update
-sudo apt install python3.7
-```
-
-## keystone
-
-```bash
-sudo apt install libssl-dev cmake g++ python3.7 python3-pip
-pip install keystone
-```
-build keystone in about 3-5 minutes.
-
-### keystone-engine
-
-```bash
-git clone https://github.com/keystone-engine/keystone.git
-cd keystone
-mkdir build
-cd build
-../make-share.sh
-sudo make install
-sudo ldconfig
-cd ../bindings/python
-sudo make install3
-```
-
-## libnx
-
-```bash
-git clone https://github.com/switchbrew/libnx
-cd libnx
-make
-sudo make install DEVKITPRO=/opt/devkitpro
-```
-
-## Starlight
-
-```bash
-git clone https://github.com/tkgstrator/Starlight.git
-cd Starlight
-make
-```
-
-# Installation
-
-For Ubuntu 18.94 on WSL2(Windows Subsystem for Linux 2)
-
 ## Requirements
+For Ubuntu 18.94 on WSL2(Windows Subsystem for Linux 2) or native like Linux operating system.
 
  - Ubuntu 18.04 (with Python3)
  - Windows 10 (above build id 18917)
  - Unpatched Nintendo Switch (enable FTP over port 5000)
- 
-## on Windows
+
+# Installation for Windows
 
 If you want to build Starlight on native Ubuntu 18.04, skip this section.
 
-### Enable Windows Subsystem for Linux
+## Enable Windows Subsystem for Linux
 
 First, you should check that Windows system meets the requirements. Run Command Prompt and type `ver`, press enter.
 
@@ -127,13 +43,13 @@ Run Command Prompot as Administrator.
 
 and restart Windows.
 
-### Install Ubuntu 18.04
+## Install Ubuntu 18.04
 
 Click below link and install Ubuntu 18.04 on Windows 10.
 
 [Ubuntu 18.04 Microsoft Store](https://www.microsoft.com/store/apps/9N9TNGVNDL3Q)
 
-### Convert WSL1 to WSL2
+## Convert WSL1 to WSL2
 
 Run Command Prompt as Administrator.
 
@@ -170,7 +86,7 @@ C:\Users\devonly>wsl --set-default-version 2
 For information on key differences with WSL 2 please visit https://aka.ms/wsl2
 ```
 
-### Install Docker Desktop for Windows
+## Install Docker Desktop for Windows
 
 Click below link and download installer, install Docker Desktop for Windows.
 
@@ -184,7 +100,7 @@ To enable WSL2 integration, you turn on some features in Settings.
    - Check `Enable integration with my default WSL distro`
    - Enable `Ubuntu-18.04`
 
-## on Ubuntu 18.04
+# Installation for Ubuntu 18.04
 
 Install Python3 to send IPS patch and subdk0 to Nintendo Switch.
 
@@ -202,7 +118,7 @@ cd Starlight
 git checkout wip-menu
 ```
 
-### Configurations
+## Configurations
 
 To apply your environment, you should edit Makefile(i.e `vi Makefile`)
 
@@ -236,7 +152,7 @@ IP ?= 192.168.0.22 # IP address for Nintendo Switch
 |ShowFloor |N/A|Not supported|
 |ShowDL |Testfire|010000A00218E000|
 
-### Commands
+## Commands
 
 ```bash
 make # Build Starlight by Docker container
@@ -245,7 +161,15 @@ make starlight # Only supported for Docker container
 make install # Build Starlight, send IPS patch and subsdk0 to Nintendo Switch (Recommend)
 ```
 
+## Specail thanks
+
+[@shadowninja108](https://twitter.com/shadowninja108) - Expertise in Splatoon 2's inner workings
+
+[@container12345](https://twitter.com/container12345) - Reverse engineering for Game::Coop classes
+
 # Credits
 0CBH0 - nsnsotool
 
 libnx - Makefile creation
+
+
