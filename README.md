@@ -120,7 +120,7 @@ Clone Starlight and checkout wip-menu.
 ```bash
 git clone https://github.com/tkgstrator/Starlight.git
 cd Starlight
-git checkout wip-menu
+make
 ```
 
 ## Configurations
