@@ -66,7 +66,7 @@ C:\Users\devonly>wsl -l -v
   docker-desktop         Running         2
 ```
 
-Convert WSL1 to WSL2 (It takes about 3 -5 mins).
+Convert WSL1 to WSL2 (It takes about 3-5 mins).
 
 ```
 C:\Users\devonly>wsl --set-version Ubuntu-18.04 2
@@ -112,7 +112,7 @@ Install Python3 to send IPS patch and subdk0 to Nintendo Switch.
 ```bash
 sudo apt update
 sudo apt upgrade
-sudo apt install python3
+sudo apt install -y python3 make
 ```
 
 Clone Starlight.
