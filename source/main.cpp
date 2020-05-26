@@ -11,10 +11,11 @@ extern "C" void __custom_fini(void) {}
 
 static agl::DrawContext *mDrawContext;
 static sead::TextWriter *mTextWriter;
-static Game::Coop::Setting *mCoopSetting;
 static uint64_t first;
 static uint64_t offset;
 static Lp::Sys::Actor *mActor;
+static Game::PlayerMgr *mPlayerMgr;
+static Game::Coop::Setting *mCoopSetting;
 static Game::Coop::EventGeyser *mEventGeyser;
 static Game::Coop::EventDirector *mEventDirector;
 static Game::Coop::PlayerDirector *mPlayerDirector;
@@ -38,18 +39,29 @@ uint32_t readU32(uint32_t *p, uint32_t offset)
     return res;
 }
 
+uint64_t readU64(uint64_t *p, uint64_t offset)
+{
+    uint32_t res;
+    asm volatile("LDR %[result], [%[base], %[offset]]"
+                 : [ result ] "=r"(res)
+                 : [ base ] "r"(p), [ offset ] "r"(offset)
+                 :);
+    return res;
+}
+
 uint32_t getGeyserPos(uint64_t pos, uint64_t first) {
     if (pos == first || pos == 0) return 65;
     return (pos - first - 0x6B0) / 0x900 + 65;
 }
 
-void renderEntrypoint(agl::DrawContext *drawContext, sead::TextWriter *textWriter, Game::Coop::Setting *coopSetting, Game::Coop::EventDirector *eventDirector, Game::Coop::PlayerDirector *playerDirector)
+void renderEntrypoint(agl::DrawContext *drawContext, sead::TextWriter *textWriter, Game::Coop::Setting *coopSetting, Game::Coop::EventDirector *eventDirector, Game::Coop::PlayerDirector *playerDirector, Game::PlayerMgr *playerMgr)
 {
     mDrawContext = drawContext;
     mTextWriter = textWriter;
     mCoopSetting = coopSetting;
     mEventDirector = eventDirector;
     mPlayerDirector = playerDirector;
+    mPlayerMgr = playerMgr;
 
     // Setting mTextWriter
     fontSize.mX = fontSize.mY = 1.5;
@@ -84,12 +96,30 @@ void renderEntrypoint(agl::DrawContext *drawContext, sead::TextWriter *textWrite
 
     // textWriter->printf("Current heap name: %s\n", Collector::mHeapMgr->getCurrentHeap()->mName.mCharPtr);
     // textWriter->printf("Current heap free space: 0x%x\n", Collector::mHeapMgr->getCurrentHeap()->getFreeSize());
+    Game::PlayerMgr *mPlayerMgrS = Collector::mPlayerMgrInstance;
+
+    if (mPlayerMgrS != NULL)
+    {
+        Game::Player *mPlayerS = mPlayerMgrS->getControlledPerformer();
+        // textWriter->printf("IPS: %08X STR: %08X\n", mPlayerMgr, mPlayerMgrS);
+        if (mPlayerS != NULL)
+        {
+            // textWriter->printf("IPS: %08X STR: %08X\n", mPlayerS, mPlayerS);
+            // textWriter->printf("IPS: %08X STR: %08X\n", readU64(uint64_t(mPlayerS), 0x328), mPlayerS->mPlayerInfo);
+            // textWriter->printf("IPS: %08X STR: %08X\n", readU64(readU64(uint64_t(mPlayerS), 0x488), 0x38), mPlayerS->mPlayerInfo->mTeam);
+            // textWriter->printf("IPS: %08X STR: %08X\n", readU64(uint64_t(mPlayerS->mPlayerInfo), 0x38), mPlayerS->mPlayerInfo->mTeam);
+            if (Collector::mController.isPressed(Controller::Buttons::UpDpad)) {
+                mPlayerS->mPlayerInfo->mTeam = bool(mPlayerS->mPlayerInfo->mTeam) ^ 1; // Swap Game::Player->mPlayerInfo->mTeam
+                mPlayerS->mTeam = bool(readU64(uint64_t(mPlayerS), 0x328)) ^ 1; // Swap Game::Player->mActor->mTeam
+            }
+        }
+    }
 
     // Display Coop Setting
     if (mCoopSetting != NULL)
     {
-        textWriter->printf("Prev Tide: %X Event: %X\n", mCoopSetting->prev.tide, mCoopSetting->prev.event);
-        textWriter->printf("Next Tide: %X Event: %X\n", mCoopSetting->next.tide, mCoopSetting->next.event);
+        // textWriter->printf("Prev Tide: %X Event: %X\n", mCoopSetting->prev.tide, mCoopSetting->prev.event);
+        // textWriter->printf("Next Tide: %X Event: %X\n", mCoopSetting->next.tide, mCoopSetting->next.event);
         for (int i = 0; i < 3; i++)
         {
             textWriter->printf("WAVE%d Tide: %X Event: %X\n", i + 1, mCoopSetting->wave[i].tide, mCoopSetting->wave[i].event);

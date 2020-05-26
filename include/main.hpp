@@ -51,7 +51,7 @@ enum Modes {
     NONE, FLY, EVENT_VIEWER, INPUT_VIEWER, PLAYER_SWITCHER, PAINT_ALL, END
 };
 
-void renderEntrypoint(agl::DrawContext *drawContext, sead::TextWriter *textWriter, Game::Coop::Setting *coopSetting, Game::Coop::EventGeyser *eventGeyser, Game::Coop::PlayerDirector *playerDirector);
+void renderEntrypoint(agl::DrawContext *drawContext, sead::TextWriter *textWriter, Game::Coop::Setting *coopSetting, Game::Coop::EventGeyser *eventGeyser, Game::Coop::PlayerDirector *playerDirector, Game::PlayerMgr *playerMgr);
 
 void allocHeap();
 
