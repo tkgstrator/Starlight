@@ -66,7 +66,7 @@ C:\Users\devonly>wsl -l -v
   docker-desktop         Running         2
 ```
 
-Convert WSL1 to WSL2 (It'll takes about 3-5 mins).
+Convert WSL1 to WSL2 (It'll take about 3-5 mins).
 
 ```
 C:\Users\devonly>wsl --set-version Ubuntu-18.04 2
@@ -107,7 +107,7 @@ To enable WSL2 integration, you'll need to turn on some features in Settings.
 
 # Installation for Ubuntu 18.04
 
-Install Python3 to be able to send IPS patch and subdk0 to Nintendo Switch.
+Install Python3 to be able to send IPS patch and subsdk0 to Nintendo Switch.
 
 ```bash
 sudo apt update
