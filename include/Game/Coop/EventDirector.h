@@ -27,10 +27,9 @@ namespace Game
         {
         public:
             _BYTE stateMachine[0x50];
-            sead::Random random1;
-            sead::Random random2;
+            sead::Random mRandom[2];
             sead::PtrArrayImpl ptrArray;
-            _QWORD goalPos;
+            _QWORD mGoalPos;
             _QWORD dword3D0;
             _QWORD dword3D8;
         };

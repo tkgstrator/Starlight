@@ -49,8 +49,10 @@ uint64_t readU64(uint64_t *p, uint64_t offset)
     return res;
 }
 
-uint32_t getGeyserPos(uint64_t pos, uint64_t first) {
-    if (pos == first || pos == 0) return 65;
+uint32_t getGeyserPos(uint64_t pos, uint64_t first)
+{
+    if (pos == first || pos == 0)
+        return 65;
     return (pos - first - 0x6B0) / 0x900 + 65;
 }
 
@@ -61,7 +63,6 @@ void renderEntrypoint(agl::DrawContext *drawContext, sead::TextWriter *textWrite
     mCoopSetting = coopSetting;
     mEventDirector = eventDirector;
     mPlayerDirector = playerDirector;
-    mPlayerMgr = playerMgr;
 
     // Setting mTextWriter
     fontSize.mX = fontSize.mY = 1.5;
@@ -79,38 +80,45 @@ void renderEntrypoint(agl::DrawContext *drawContext, sead::TextWriter *textWrite
     static bool init = false;
     if (!init)
     {
-
         mView = new View();
         menu::SimpleMenu *m = new menu::SimpleMenu();
-        auto renderCallback = []() {
-            return std::string("Current scene name: ") + std::string(Lp::Utl::getCurSceneName());
-        };
+        // auto renderCallback = []() {
+        //     return std::string("Current scene name: ") + std::string(Lp::Utl::getCurSceneName());
+        // };
         menu::SimpleMenuEntry *sceneDisplayEntry = new menu::SimpleMenuEntry();
-        sceneDisplayEntry->mRenderCallback = renderCallback;
-        m->mEntries.push_back(sceneDisplayEntry);
+        // sceneDisplayEntry->mRenderCallback = renderCallback;
+        // m->mEntries.push_back(sceneDisplayEntry);
 
         mView->pushMenu(m);
-
         init = true;
     }
 
     // textWriter->printf("Current heap name: %s\n", Collector::mHeapMgr->getCurrentHeap()->mName.mCharPtr);
     // textWriter->printf("Current heap free space: 0x%x\n", Collector::mHeapMgr->getCurrentHeap()->getFreeSize());
-    Game::PlayerMgr *mPlayerMgrS = Collector::mPlayerMgrInstance;
+    Game::PlayerMgr *mPlayerMgr = Collector::mPlayerMgrInstance;
 
-    if (mPlayerMgrS != NULL)
+    if (mPlayerMgr != NULL)
     {
-        Game::Player *mPlayerS = mPlayerMgrS->getControlledPerformer();
-        // textWriter->printf("IPS: %08X STR: %08X\n", mPlayerMgr, mPlayerMgrS);
-        if (mPlayerS != NULL)
+        Game::Player *mPlayer = mPlayerMgr->getControlledPerformer();
+        textWriter->printf("Game::Player: (%03d, %03d, %03d)", int(mPlayer->mPosition.mX), int(mPlayer->mPosition.mZ), int(mPlayer->mPosition.mY));
+        textWriter->printf("Cmn::PlayerInfo: (%s, %s)", (!mPlayer->mTeam ? "Alpha" : "Bravo"), (!mPlayer->mPlayerInfo->mTeam ? "Alpha" : "Bravo"));
+        if (mPlayer != NULL)
         {
-            // textWriter->printf("IPS: %08X STR: %08X\n", mPlayerS, mPlayerS);
-            // textWriter->printf("IPS: %08X STR: %08X\n", readU64(uint64_t(mPlayerS), 0x328), mPlayerS->mPlayerInfo);
-            // textWriter->printf("IPS: %08X STR: %08X\n", readU64(readU64(uint64_t(mPlayerS), 0x488), 0x38), mPlayerS->mPlayerInfo->mTeam);
-            // textWriter->printf("IPS: %08X STR: %08X\n", readU64(uint64_t(mPlayerS->mPlayerInfo), 0x38), mPlayerS->mPlayerInfo->mTeam);
-            if (Collector::mController.isPressed(Controller::Buttons::UpDpad)) {
-                mPlayerS->mPlayerInfo->mTeam = bool(mPlayerS->mPlayerInfo->mTeam) ^ 1; // Swap Game::Player->mPlayerInfo->mTeam
-                mPlayerS->mTeam = bool(readU64(uint64_t(mPlayerS), 0x328)) ^ 1; // Swap Game::Player->mActor->mTeam
+            if (Collector::mController.isPressed(Controller::Buttons::UpDpad))
+            {
+                mPlayer->mPlayerInfo->mTeam ^= 1; // Swap Game::Player->mPlayerInfo->mTeam
+            }
+            if (Collector::mController.isPressed(Controller::Buttons::UpDpad))
+            {
+            }
+            if (Collector::mController.isPressed(Controller::Buttons::DownDpad))
+            {
+            }
+            if (Collector::mController.isPressed(Controller::Buttons::RightDpad))
+            {
+            }
+            if (Collector::mController.isPressed(Controller::Buttons::LeftDpad))
+            {
             }
         }
     }
@@ -126,7 +134,7 @@ void renderEntrypoint(agl::DrawContext *drawContext, sead::TextWriter *textWrite
         }
         if (mPlayerDirector != NULL)
         {
-            Game::Coop::Player player = mPlayerDirector->player[0];
+            Game::Coop::Player player = mPlayerDirector->mPlayer[0];
             textWriter->printf("Power: %04d Got: %s Round %03d Total: %03d\n", player.mRoundBankedPowerIkuraNum, (player.mGotGoldenIkuraNum ? "True" : "False"), player.mRoundBankedGoldenIkuraNum, player.mTotalBankedGoldenIkuraNum);
         }
     }
@@ -139,22 +147,24 @@ void renderEntrypoint(agl::DrawContext *drawContext, sead::TextWriter *textWrite
         {
             sead::PtrArrayImpl geyser = mEventGeyser->ptrArray;
             uint64_t *ptr = mEventGeyser->ptrArray.ptr;
-            textWriter->printf("Random Seed1: %08X %08X %08X %08X\n", mEventGeyser->random1.mSeed1, mEventGeyser->random1.mSeed2, mEventGeyser->random1.mSeed3, mEventGeyser->random1.mSeed4);
-            textWriter->printf("Random Seed2: %08X %08X %08X %08X\n", mEventGeyser->random2.mSeed1, mEventGeyser->random2.mSeed2, mEventGeyser->random2.mSeed3, mEventGeyser->random2.mSeed4);
+            textWriter->printf("Random Seed1: %08X %08X %08X %08X\n", mEventGeyser->mRandom[0].mSeed1, mEventGeyser->mRandom[0].mSeed2, mEventGeyser->mRandom[0].mSeed3, mEventGeyser->mRandom[0].mSeed4);
+            textWriter->printf("Random Seed2: %08X %08X %08X %08X\n", mEventGeyser->mRandom[0].mSeed1, mEventGeyser->mRandom[1].mSeed2, mEventGeyser->mRandom[1].mSeed3, mEventGeyser->mRandom[1].mSeed4);
             // Game::Coop::SpawnGeyser **arr = (Game::Coop::SpawnGeyser **) geyser.ptr;
-            if (flg) { // Get Offset and First Address 
+            if (flg)
+            { // Get Offset and First Address
                 first = (uint64_t)ptr[0];
                 offset = (uint64_t)ptr[1] - first;
                 flg = false;
-                state = mEventGeyser->random1.mSeed1;
+                state = mEventGeyser->mRandom[0].mSeed1;
             }
 
-            textWriter->printf("Succ: %c Goal: %c\n", getGeyserPos((uint64_t)ptr[0], first), getGeyserPos((uint64_t)(mEventGeyser->goalPos), first));
+            textWriter->printf("Succ: %c Goal: %c\n", getGeyserPos((uint64_t)ptr[0], first), getGeyserPos((uint64_t)(mEventGeyser->mGoalPos), first));
             uint32_t mX = getGeyserPos((uint64_t)ptr[0], first) - 65;
-            uint32_t mY = getGeyserPos((uint64_t)(mEventGeyser->goalPos), first) - 65;
-            if ((mX + mY != 0) && mEventGeyser->random1.mSeed1 != state) {
+            uint32_t mY = getGeyserPos((uint64_t)(mEventGeyser->mGoalPos), first) - 65;
+            if ((mX + mY != 0) && mEventGeyser->mRandom[0].mSeed1 != state)
+            {
                 count[mX][mY] += 1;
-                state = mEventGeyser->random1.mSeed1;
+                state = mEventGeyser->mRandom[0].mSeed1;
             }
 
             for (int i = 0; i < 7; i++)
@@ -177,7 +187,9 @@ void renderEntrypoint(agl::DrawContext *drawContext, sead::TextWriter *textWrite
                 }
             }
         }
-    } else {
+    }
+    else
+    {
         flg = true;
     }
 
