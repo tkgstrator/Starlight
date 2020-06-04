@@ -9,44 +9,85 @@
 
 namespace Game
 {
-namespace Coop
-{
-class EnemyDirector
-{
-};
-class EventRally
-{
-    _BYTE gap[0x694];
-};
-class EventGeyser
-{
-public:
-    /* ... */
-    // Cmn::Actor *actor;
-    // Lp::Utl::StateMachine *stateMachine;
-    _BYTE gap[0x398];
-    sead::Random random1;
-    sead::Random random2;
-    sead::PtrArrayImpl ptrArray;
-    _QWORD goalPos;
-    _QWORD dword3D0;
-    _QWORD dword3D8;
-};
+    namespace Coop
+    {
+        class EventNone : public Cmn::Actor
+        {
+        public:
+            _BYTE stateMachine[0x50];
+        };
+        
+        class EventRush : public Cmn::Actor
+        {
+        public:
+            _BYTE stateMachine[0x50];
+        };
+        
+        class EventGeyser : public Cmn::Actor
+        {
+        public:
+            _BYTE stateMachine[0x50];
+            sead::Random random1;
+            sead::Random random2;
+            sead::PtrArrayImpl ptrArray;
+            _QWORD goalPos;
+            _QWORD dword3D0;
+            _QWORD dword3D8;
+        };
 
-class SpawnGeyser
-{
-public:
-    _BYTE gap[0x39C];
-    sead::Vector3<float> vector;
-};
+        class EventDozer : public Cmn::Actor
+        {
+        public:
+            _BYTE stateMachine[0x50];
+        };
 
-class EventDirector : Cmn::Actor
-{
-public:
-    sead::IDisposer disposer;
-    _BYTE eventNone[0x8];
-    _BYTE eventRush[0x8];
-    Game::Coop::EventGeyser *eventGeyser;
-};
-}; // namespace Coop
-}; // namespace Game
+        class EventRally : public Cmn::Actor
+        {
+        public:
+            _BYTE stateMachine[0x50];
+        };
+
+        class EventFog : public Cmn::Actor
+        {
+        public:
+            _BYTE stateMachine[0x50];
+        };
+
+        class EventMissile : public Cmn::Actor
+        {
+        public:
+            _BYTE stateMachine[0x50];
+        };
+
+        class SpawnGeyser : public Cmn::Actor
+        {
+        public:
+            _BYTE gap348[84];
+            sead::Vector3<float> vector;
+            _BYTE gap39c[264];
+            _QWORD qword4A8;
+            _BYTE gap4B0[248];
+            _BYTE stateMachine[0x50];
+            _QWORD qword5F8;
+            _DWORD dword600;
+            _QWORD qword608;
+            _QWORD qword610;
+            __attribute__((aligned(16))) _QWORD qword620;
+            _QWORD qword628;
+            _QWORD qword630;
+            _QWORD qword638;
+        };
+
+        class EventDirector : public Cmn::Actor, sead::IDisposer
+        {
+        public:
+            Game::Coop::EventNone *eventNone;
+            Game::Coop::EventRush *eventRush;
+            Game::Coop::EventGeyser *eventGeyser;
+            Game::Coop::EventDozer *eventDozer;
+            Game::Coop::EventRally *eventRally;
+            Game::Coop::EventFog *eventFog;
+            Game::Coop::EventMissile *eventMissile;
+        };
+    }; // namespace Coop
+};     // namespace Game
