@@ -100,12 +100,13 @@ void renderEntrypoint(agl::DrawContext *drawContext, sead::TextWriter *textWrite
     if (mPlayerMgr != NULL)
     {
         Game::Player *mPlayer = mPlayerMgr->getControlledPerformer();
-        textWriter->printf("Game::Player: (%03d, %03d, %03d)", int(mPlayer->mPosition.mX), int(mPlayer->mPosition.mZ), int(mPlayer->mPosition.mY));
-        textWriter->printf("Cmn::PlayerInfo: (%s, %s)", (!mPlayer->mTeam ? "Alpha" : "Bravo"), (!mPlayer->mPlayerInfo->mTeam ? "Alpha" : "Bravo"));
+        textWriter->printf("Game::Player: (%03d, %03d, %03d)\n", int(mPlayer->mPosition.mX), int(mPlayer->mPosition.mZ), int(mPlayer->mPosition.mY));
+        textWriter->printf("Cmn::PlayerInfo: (%s, %s)\n", (!mPlayer->mTeam ? "Alpha" : "Bravo"), (!mPlayer->mPlayerInfo->mTeam ? "Alpha" : "Bravo"));
         if (mPlayer != NULL)
         {
             if (Collector::mController.isPressed(Controller::Buttons::UpDpad))
             {
+                mPlayer->mTeam ^= 1; // Swap Game::Player->mPlayerInfo->mTeam
                 mPlayer->mPlayerInfo->mTeam ^= 1; // Swap Game::Player->mPlayerInfo->mTeam
             }
             if (Collector::mController.isPressed(Controller::Buttons::UpDpad))
@@ -126,16 +127,14 @@ void renderEntrypoint(agl::DrawContext *drawContext, sead::TextWriter *textWrite
     // Display Coop Setting
     if (mCoopSetting != NULL)
     {
-        // textWriter->printf("Prev Tide: %X Event: %X\n", mCoopSetting->prev.tide, mCoopSetting->prev.event);
-        // textWriter->printf("Next Tide: %X Event: %X\n", mCoopSetting->next.tide, mCoopSetting->next.event);
         for (int i = 0; i < 3; i++)
         {
-            textWriter->printf("WAVE%d Tide: %X Event: %X\n", i + 1, mCoopSetting->wave[i].tide, mCoopSetting->wave[i].event);
+            textWriter->printf("WAVE%d Tide: %X Event: %X\n", i + 1, mCoopSetting->mWave[i].tide, mCoopSetting->mWave[i].event);
         }
         if (mPlayerDirector != NULL)
         {
             Game::Coop::Player player = mPlayerDirector->mPlayer[0];
-            textWriter->printf("Power: %04d Got: %s Round %03d Total: %03d\n", player.mRoundBankedPowerIkuraNum, (player.mGotGoldenIkuraNum ? "True" : "False"), player.mRoundBankedGoldenIkuraNum, player.mTotalBankedGoldenIkuraNum);
+            textWriter->printf("Power: %05d Got: %s Round %03d Total: %03d\n", player.mRoundBankedPowerIkuraNum, (player.mGotGoldenIkuraNum ? "True" : "False"), player.mRoundBankedGoldenIkuraNum, player.mTotalBankedGoldenIkuraNum);
         }
     }
 
@@ -167,12 +166,8 @@ void renderEntrypoint(agl::DrawContext *drawContext, sead::TextWriter *textWrite
                 state = mEventGeyser->mRandom[0].mSeed1;
             }
 
-            for (int i = 0; i < 7; i++)
+            for (int i = 0; i < geyser.mLength; i++)
             {
-                if (geyser.mLength == 5)
-                {
-                    textWriter->printf("%02d %02d %02d %02d %02d %02d %02d %02d %02d\n", count[i][0], count[i][1], count[i][2], count[i][3], count[i][4], count[i][5], count[i][6], count[i][7], count[i][8]);
-                }
                 if (geyser.mLength == 7)
                 {
                     textWriter->printf("%02d %02d %02d %02d %02d %02d %02d\n", count[i][0], count[i][1], count[i][2], count[i][3], count[i][4], count[i][5], count[i][6]);
