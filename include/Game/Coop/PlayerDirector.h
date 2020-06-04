@@ -73,6 +73,19 @@ namespace Game
         public:
             void *vtable;
             Game::Coop::Player mPlayer[4];
+
+            _QWORD lostBankedGoldenIkura(int);
+            _QWORD lostCashedGoldenIkura(void);
+            _QWORD bankGolodenIkura(int);
+            _QWORD pickGoldenIkura(int);
+            void setupRoundGoldenIkura(int);
+            void resetTotalBankedGoldenIkuraNum(void);
+            _QWORD getTotalBankedGoldenIkuraNum(void);
+            _QWORD resetRoundBankedGoldenIkuraNum(void);
+            _QWORD getRoundBankedGoldenIkuraNum(void);
+            void resetCashedGoldenIkuraNum(void);
+            void setCashedGoldenIkuraNum(int, int);
+            _QWORD getNormalIkuraNum(void);
         };
 
     } // namespace Coop
