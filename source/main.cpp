@@ -49,13 +49,6 @@ uint64_t readU64(uint64_t *p, uint64_t offset)
     return res;
 }
 
-uint32_t getGeyserPos(uint64_t pos, uint64_t first)
-{
-    if (pos == first || pos == 0)
-        return 65;
-    return (pos - first - 0x6B0) / 0x900 + 65;
-}
-
 void renderEntrypoint(agl::DrawContext *drawContext, sead::TextWriter *textWriter, Game::Coop::Setting *coopSetting, Game::Coop::EventDirector *eventDirector, Game::Coop::PlayerDirector *playerDirector, Game::PlayerMgr *playerMgr)
 {
     mDrawContext = drawContext;
@@ -95,31 +88,35 @@ void renderEntrypoint(agl::DrawContext *drawContext, sead::TextWriter *textWrite
 
     // textWriter->printf("Current heap name: %s\n", Collector::mHeapMgr->getCurrentHeap()->mName.mCharPtr);
     // textWriter->printf("Current heap free space: 0x%x\n", Collector::mHeapMgr->getCurrentHeap()->getFreeSize());
+    mTextWriter->printf("Welcome to Starlight!\n");
     Game::PlayerMgr *mPlayerMgr = Collector::mPlayerMgrInstance;
 
     if (mPlayerMgr != NULL)
     {
         Game::Player *mPlayer = mPlayerMgr->getControlledPerformer();
-        textWriter->printf("Game::Player: (%03d, %03d, %03d)\n", int(mPlayer->mPosition.mX), int(mPlayer->mPosition.mZ), int(mPlayer->mPosition.mY));
-        textWriter->printf("Cmn::PlayerInfo: (%s, %s)\n", (!mPlayer->mTeam ? "Alpha" : "Bravo"), (!mPlayer->mPlayerInfo->mTeam ? "Alpha" : "Bravo"));
         if (mPlayer != NULL)
         {
+            textWriter->printf("Game::Player: (%03d, %03d, %03d)\n", int(mPlayer->mPosition.mX), int(mPlayer->mPosition.mZ), int(mPlayer->mPosition.mY));
+            textWriter->printf("Cmn::PlayerInfo: (%s, %s)\n", (!mPlayer->mTeam ? "Alpha" : "Bravo"), (!mPlayer->mPlayerInfo->mTeam ? "Alpha" : "Bravo"));
             if (Collector::mController.isPressed(Controller::Buttons::UpDpad))
             {
-                mPlayer->mTeam ^= 1; // Swap Game::Player->mPlayerInfo->mTeam
-                mPlayer->mPlayerInfo->mTeam ^= 1; // Swap Game::Player->mPlayerInfo->mTeam
+                mPlayer->mTeam ^= 1;              // Swap Game::Player->mPlayerInfo->mTeam
+                // mPlayer->mPlayerInfo->mTeam ^= 1; // Swap Game::Player->mPlayerInfo->mTeam
             }
-            if (Collector::mController.isPressed(Controller::Buttons::UpDpad))
+            if (mCoopSetting == NULL)
             {
-            }
-            if (Collector::mController.isPressed(Controller::Buttons::DownDpad))
-            {
-            }
-            if (Collector::mController.isPressed(Controller::Buttons::RightDpad))
-            {
-            }
-            if (Collector::mController.isPressed(Controller::Buttons::LeftDpad))
-            {
+                if (Collector::mController.isPressed(Controller::Buttons::UpDpad))
+                {
+                }
+                if (Collector::mController.isPressed(Controller::Buttons::DownDpad))
+                {
+                }
+                if (Collector::mController.isPressed(Controller::Buttons::RightDpad))
+                {
+                }
+                if (Collector::mController.isPressed(Controller::Buttons::LeftDpad))
+                {
+                }
             }
         }
     }
@@ -142,45 +139,12 @@ void renderEntrypoint(agl::DrawContext *drawContext, sead::TextWriter *textWrite
     if (mEventDirector != NULL)
     {
         mEventGeyser = mEventDirector->eventGeyser;
-        if (Game::Coop::Utl::GetEventType() == 2)
+        
+        if (mEventGeyser != NULL)
         {
-            sead::PtrArrayImpl geyser = mEventGeyser->ptrArray;
-            uint64_t *ptr = mEventGeyser->ptrArray.ptr;
             textWriter->printf("Random Seed1: %08X %08X %08X %08X\n", mEventGeyser->mRandom[0].mSeed1, mEventGeyser->mRandom[0].mSeed2, mEventGeyser->mRandom[0].mSeed3, mEventGeyser->mRandom[0].mSeed4);
             textWriter->printf("Random Seed2: %08X %08X %08X %08X\n", mEventGeyser->mRandom[0].mSeed1, mEventGeyser->mRandom[1].mSeed2, mEventGeyser->mRandom[1].mSeed3, mEventGeyser->mRandom[1].mSeed4);
-            // Game::Coop::SpawnGeyser **arr = (Game::Coop::SpawnGeyser **) geyser.ptr;
-            if (flg)
-            { // Get Offset and First Address
-                first = (uint64_t)ptr[0];
-                offset = (uint64_t)ptr[1] - first;
-                flg = false;
-                state = mEventGeyser->mRandom[0].mSeed1;
-            }
-
-            textWriter->printf("Succ: %c Goal: %c\n", getGeyserPos((uint64_t)ptr[0], first), getGeyserPos((uint64_t)(mEventGeyser->mGoalPos), first));
-            uint32_t mX = getGeyserPos((uint64_t)ptr[0], first) - 65;
-            uint32_t mY = getGeyserPos((uint64_t)(mEventGeyser->mGoalPos), first) - 65;
-            if ((mX + mY != 0) && mEventGeyser->mRandom[0].mSeed1 != state)
-            {
-                count[mX][mY] += 1;
-                state = mEventGeyser->mRandom[0].mSeed1;
-            }
-
-            for (int i = 0; i < geyser.mLength; i++)
-            {
-                if (geyser.mLength == 7)
-                {
-                    textWriter->printf("%02d %02d %02d %02d %02d %02d %02d\n", count[i][0], count[i][1], count[i][2], count[i][3], count[i][4], count[i][5], count[i][6]);
-                }
-                if (geyser.mLength == 8)
-                {
-                    textWriter->printf("%02d %02d %02d %02d %02d %02d %02d %02d\n", count[i][0], count[i][1], count[i][2], count[i][3], count[i][4], count[i][5], count[i][6], count[i][7]);
-                }
-                if (geyser.mLength == 9)
-                {
-                    textWriter->printf("%02d %02d %02d %02d %02d %02d %02d %02d %02d\n", count[i][0], count[i][1], count[i][2], count[i][3], count[i][4], count[i][5], count[i][6], count[i][7], count[i][8]);
-                }
-            }
+            textWriter->printf("EventGeyser: (%c, %c)\n", mEventGeyser->getGeyserSuccPos(), mEventGeyser->getGeyserGoalPos());
         }
     }
     else

@@ -3,13 +3,13 @@ gsys::SystemTask::invokeDrawTV_+284 NOP // enable display debug stuff (which is 
 gsys::SystemTask::invokeDrawTV_+390:
     MOV X1, X0
     MOV X0, X25
-    ADRP X2, #0x29A4000 // CoopSetting
+    ADRP X2, #0x29A4000 // Game::Coop::CoopSetting
     LDR X2, [X2, #0xE08]
     LDR X2, [X2]
-    ADRP X3, #0x29AB000 // EventDiretor
+    ADRP X3, #0x29AB000 // Game::Coop::EventDiretor
     LDR X3, [X3, #0xBC0]
     LDR X3, [X3]
-    ADRP X4, #0x29A9000 // PlayerDirector
+    ADRP X4, #0x29A9000 // Game::Coop::PlayerDirector
     LDR X4, [X4, #0xDB8]
     LDR X4, [X4]
     ADRP X5, #0x299B000 // PlayerMgr
