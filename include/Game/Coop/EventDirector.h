@@ -32,6 +32,34 @@ namespace Game
             _QWORD mGoalPos;
             _QWORD dword3D0;
             _QWORD dword3D8;
+
+            u64 getGeyserSuccPos(void) {
+                u64 *ptr = this->ptrArray.ptr;
+                if (ptr != NULL) {
+                    u64 index = u64(ptr[0]);
+                    for (int i = 0; i < this->ptrArray.mLength; i++)
+                    {
+                        if (u64(ptr[i]) < index)
+                            index = u64(ptr[i]);
+                    }
+                    return (u64(ptr[0]) == index) ? 65 : (u64(ptr[0]) - index - 0x680) / 0x900 + 65;
+                }
+                return 65;
+            }
+
+            u64 getGeyserGoalPos(void) {
+                u64 *ptr = this->ptrArray.ptr;
+                if (ptr != NULL) {
+                    u64 index = u64(ptr[0]);
+                    for (int i = 0; i < this->ptrArray.mLength; i++)
+                    {
+                        if (u64(ptr[i]) < index)
+                            index = u64(ptr[i]);
+                    }
+                    return (u64(ptr[0]) == index) ? 65 : (this->mGoalPos - index - 0x680) / 0x900 + 65;
+                }
+                return 65;
+            }
         };
 
         class EventDozer : public Cmn::Actor
