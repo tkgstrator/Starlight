@@ -12,8 +12,8 @@ gsys::SystemTask::invokeDrawTV_+390:
     ADRP X4, #0x29A9000 // Game::Coop::PlayerDirector
     LDR X4, [X4, #0xDB8]
     LDR X4, [X4]
-    ADRP X5, #0x299B000 // PlayerMgr
-    LDR X5, [X5, #0x578]
+    ADRP X5, #0x29A9000 // Game::Coop::EnemyDirector
+    LDR X5, [X5, #0x740]
     LDR X5, [X5]
     BL renderEntrypoint
     B #0x288
