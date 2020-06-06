@@ -13,10 +13,11 @@ static agl::DrawContext *mDrawContext;
 static sead::TextWriter *mTextWriter;
 static uint64_t first;
 static uint64_t offset;
-static Lp::Sys::Actor *mActor;
+// static Lp::Sys::Actor *mActor;
 static Game::PlayerMgr *mPlayerMgr;
 static Game::Coop::Setting *mCoopSetting;
 static Game::Coop::EventGeyser *mEventGeyser;
+static Game::Coop::EnemyDirector *mEnemyDirector;
 static Game::Coop::EventDirector *mEventDirector;
 static Game::Coop::PlayerDirector *mPlayerDirector;
 static sead::ExpHeap *mStarlightHeap;
@@ -24,7 +25,6 @@ static View *mView;
 static int mode;
 static bool showMenu;
 static uint32_t state;
-static bool flg = true;
 static uint32_t dist[N][N];
 static uint32_t count[N][N] = {0};
 static sead::Vector2<float> fontSize;
@@ -49,12 +49,13 @@ uint64_t readU64(uint64_t *p, uint64_t offset)
     return res;
 }
 
-void renderEntrypoint(agl::DrawContext *drawContext, sead::TextWriter *textWriter, Game::Coop::Setting *coopSetting, Game::Coop::EventDirector *eventDirector, Game::Coop::PlayerDirector *playerDirector, Game::PlayerMgr *playerMgr)
+void renderEntrypoint(agl::DrawContext *drawContext, sead::TextWriter *textWriter, Game::Coop::Setting *coopSetting, Game::Coop::EventDirector *eventDirector, Game::Coop::PlayerDirector *playerDirector, Game::Coop::EnemyDirector *enemyDirector)
 {
     mDrawContext = drawContext;
     mTextWriter = textWriter;
     mCoopSetting = coopSetting;
     mEventDirector = eventDirector;
+    mEnemyDirector = enemyDirector;
     mPlayerDirector = playerDirector;
 
     // Setting mTextWriter
@@ -135,7 +136,17 @@ void renderEntrypoint(agl::DrawContext *drawContext, sead::TextWriter *textWrite
         }
     }
 
-    // Display Event Geyser
+    // Display EnemyDirector
+    if (mEnemyDirector != NULL) {
+        textWriter->printf("Random Seed1: %08X %08X %08X %08X\n", mEnemyDirector->mRandom[0].mSeed1, mEnemyDirector->mRandom[0].mSeed2, mEnemyDirector->mRandom[0].mSeed3, mEnemyDirector->mRandom[0].mSeed4);
+        textWriter->printf("Random Seed2: %08X %08X %08X %08X\n", mEnemyDirector->mRandom[0].mSeed1, mEnemyDirector->mRandom[1].mSeed2, mEnemyDirector->mRandom[1].mSeed3, mEnemyDirector->mRandom[1].mSeed4);
+        sead::PtrArrayImpl array = mEnemyDirector->mEnemyArray1;
+        textWriter->printf("EnemyDirector: %X\n", array.mLength);
+        for (int i = 0; i < array.mLength; i++)
+            textWriter->printf("%08X\n", array.ptr[i]);
+    } 
+
+    // Display EventGeyser
     if (mEventDirector != NULL)
     {
         mEventGeyser = mEventDirector->eventGeyser;
@@ -144,12 +155,9 @@ void renderEntrypoint(agl::DrawContext *drawContext, sead::TextWriter *textWrite
         {
             textWriter->printf("Random Seed1: %08X %08X %08X %08X\n", mEventGeyser->mRandom[0].mSeed1, mEventGeyser->mRandom[0].mSeed2, mEventGeyser->mRandom[0].mSeed3, mEventGeyser->mRandom[0].mSeed4);
             textWriter->printf("Random Seed2: %08X %08X %08X %08X\n", mEventGeyser->mRandom[0].mSeed1, mEventGeyser->mRandom[1].mSeed2, mEventGeyser->mRandom[1].mSeed3, mEventGeyser->mRandom[1].mSeed4);
-            textWriter->printf("EventGeyser: (%c, %c)\n", mEventGeyser->getGeyserSuccPos(), mEventGeyser->getGeyserGoalPos());
+            if (Game::Coop::Utl::GetEventType() == 2)
+                textWriter->printf("EventGeyser: (%c, %c)\n", mEventGeyser->getGeyserSuccPos(), mEventGeyser->getGeyserGoalPos());
         }
-    }
-    else
-    {
-        flg = true;
     }
 
     mView->update();

@@ -56,7 +56,7 @@ namespace Game
                         if (u64(ptr[i]) < index)
                             index = u64(ptr[i]);
                     }
-                    return (u64(ptr[0]) == index) ? 65 : (this->mGoalPos - index - 0x680) / 0x900 + 65;
+                    return (u64(this->mGoalPos) == index) ? 65 : (this->mGoalPos - index - 0x680) / 0x900 + 65;
                 }
                 return 65;
             }
