@@ -23,6 +23,9 @@ namespace Game
             static u64 GetRoundIdx();
             static u64 GetRoundTotalFrame();
             static u64 CountActivePlayer();
+            static u64 IsSpectatorStation();
+            static u64 GetControlledPlayer();
+            static bool IsControlledPlayer(Game::Player *);
             /* ... */
         };
     }; // namespace Coop
