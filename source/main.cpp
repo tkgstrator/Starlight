@@ -98,16 +98,12 @@ void renderEntrypoint(agl::DrawContext *drawContext, sead::TextWriter *textWrite
         if (mPlayer != NULL)
         {
             textWriter->printf("Game::Player: (%03d, %03d, %03d)\n", int(mPlayer->mPosition.mX), int(mPlayer->mPosition.mZ), int(mPlayer->mPosition.mY));
-            textWriter->printf("Cmn::PlayerInfo: (%s, %s)\n", (!mPlayer->mTeam ? "Alpha" : "Bravo"), (!mPlayer->mPlayerInfo->mTeam ? "Alpha" : "Bravo"));
-            if (Collector::mController.isPressed(Controller::Buttons::UpDpad))
-            {
-                mPlayer->mTeam ^= 1;              // Swap Game::Player->mPlayerInfo->mTeam
-                // mPlayer->mPlayerInfo->mTeam ^= 1; // Swap Game::Player->mPlayerInfo->mTeam
-            }
             if (mCoopSetting == NULL)
             {
                 if (Collector::mController.isPressed(Controller::Buttons::UpDpad))
                 {
+                    mPlayer->mTeam ^= 1; // Swap Game::Player->mPlayerInfo->mTeam
+                    mPlayer->mPlayerInfo->mTeam ^= 1; // Swap Game::Player->mPlayerInfo->mTeam
                 }
                 if (Collector::mController.isPressed(Controller::Buttons::DownDpad))
                 {
@@ -140,10 +136,6 @@ void renderEntrypoint(agl::DrawContext *drawContext, sead::TextWriter *textWrite
     if (mEnemyDirector != NULL) {
         textWriter->printf("Random Seed1: %08X %08X %08X %08X\n", mEnemyDirector->mRandom[0].mSeed1, mEnemyDirector->mRandom[0].mSeed2, mEnemyDirector->mRandom[0].mSeed3, mEnemyDirector->mRandom[0].mSeed4);
         textWriter->printf("Random Seed2: %08X %08X %08X %08X\n", mEnemyDirector->mRandom[0].mSeed1, mEnemyDirector->mRandom[1].mSeed2, mEnemyDirector->mRandom[1].mSeed3, mEnemyDirector->mRandom[1].mSeed4);
-        sead::PtrArrayImpl array = mEnemyDirector->mEnemyArray1;
-        textWriter->printf("EnemyDirector: %X\n", array.mLength);
-        for (int i = 0; i < array.mLength; i++)
-            textWriter->printf("%08X\n", array.ptr[i]);
     } 
 
     // Display EventGeyser
@@ -157,6 +149,26 @@ void renderEntrypoint(agl::DrawContext *drawContext, sead::TextWriter *textWrite
             textWriter->printf("Random Seed2: %08X %08X %08X %08X\n", mEventGeyser->mRandom[0].mSeed1, mEventGeyser->mRandom[1].mSeed2, mEventGeyser->mRandom[1].mSeed3, mEventGeyser->mRandom[1].mSeed4);
             if (Game::Coop::Utl::GetEventType() == 2)
                 textWriter->printf("EventGeyser: (%c, %c)\n", mEventGeyser->getGeyserSuccPos(), mEventGeyser->getGeyserGoalPos());
+            if (mPlayerDirector != NULL)
+            {
+                if (Collector::mController.isPressed(Controller::Buttons::UpDpad))
+                {
+                    mPlayerDirector->pickGoldenIkura(0);
+                    mPlayerDirector->bankGoldenIkura(0);
+                }
+                if (Collector::mController.isPressed(Controller::Buttons::DownDpad))
+                {
+                    mPlayerDirector->pickGoldenIkura(0);
+                }
+                if (Collector::mController.isPressed(Controller::Buttons::RightDpad))
+                {
+                    mPlayerDirector->lostCashedGoldenIkura();
+                }
+                if (Collector::mController.isPressed(Controller::Buttons::LeftDpad))
+                {
+                    mPlayerDirector->lostBankedGoldenIkura(0);
+                }
+            }
         }
     }
 

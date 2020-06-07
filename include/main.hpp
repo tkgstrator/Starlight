@@ -37,6 +37,7 @@
 #include "Game/PaintUtl.h"
 #include "Game/Coop/Utl.h"
 #include "Game/Coop/Setting.h"
+#include "Game/Coop/GoldenIkura.h"
 #include "Game/Coop/EnemyDirector.h"
 #include "Game/Coop/EventDirector.h"
 #include "Game/Coop/PlayerDirector.h"

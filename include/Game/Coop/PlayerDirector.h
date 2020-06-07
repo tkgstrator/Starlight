@@ -76,7 +76,7 @@ namespace Game
 
             _QWORD lostBankedGoldenIkura(int);
             _QWORD lostCashedGoldenIkura(void);
-            _QWORD bankGolodenIkura(int);
+            _QWORD bankGoldenIkura(int);
             _QWORD pickGoldenIkura(int);
             void setupRoundGoldenIkura(int);
             void resetTotalBankedGoldenIkuraNum(void);
