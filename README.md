@@ -1,3 +1,5 @@
+[English Document](README.md) | [日本語ドキュメント](README_JP.md)
+
 # Starlight
 
 An enviroment for linking to Splatoon 2 executable and implementing hooks.
