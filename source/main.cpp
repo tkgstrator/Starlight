@@ -98,79 +98,60 @@ void renderEntrypoint(agl::DrawContext *drawContext, sead::TextWriter *textWrite
         if (mPlayer != NULL)
         {
             textWriter->printf("Game::Player: (%03d, %03d, %03d)\n", int(mPlayer->mPosition.mX), int(mPlayer->mPosition.mZ), int(mPlayer->mPosition.mY));
-            if (mCoopSetting == NULL)
+        }
+        // Display Coop Setting
+        if (mCoopSetting != NULL)
+        {
+            for (int i = 0; i < 3; i++)
             {
-                if (Collector::mController.isPressed(Controller::Buttons::UpDpad))
+                textWriter->printf("WAVE%d Tide: %X Event: %X\n", i + 1, mCoopSetting->mWave[i].tide, mCoopSetting->mWave[i].event);
+            }
+            if (mPlayerDirector != NULL)
+            {
+                Game::Coop::Player player = mPlayerDirector->mPlayer[0];
+                textWriter->printf("Power: %05d Got: %s Round %03d Total: %03d\n", player.mRoundBankedPowerIkuraNum, (player.mGotGoldenIkuraNum ? "True" : "False"), player.mRoundBankedGoldenIkuraNum, player.mTotalBankedGoldenIkuraNum);
+            }
+            // Display EventGeyser
+            if (mEventDirector != NULL)
+            {
+                mEventGeyser = mEventDirector->eventGeyser;
+
+                if (mEventGeyser != NULL)
                 {
-                    mPlayer->mTeam ^= 1; // Swap Game::Player->mPlayerInfo->mTeam
-                    mPlayer->mPlayerInfo->mTeam ^= 1; // Swap Game::Player->mPlayerInfo->mTeam
-                }
-                if (Collector::mController.isPressed(Controller::Buttons::DownDpad))
-                {
-                }
-                if (Collector::mController.isPressed(Controller::Buttons::RightDpad))
-                {
-                }
-                if (Collector::mController.isPressed(Controller::Buttons::LeftDpad))
-                {
+                    textWriter->printf("Random Seed1: %08X %08X %08X %08X\n", mEventGeyser->mRandom[0].mSeed1, mEventGeyser->mRandom[0].mSeed2, mEventGeyser->mRandom[0].mSeed3, mEventGeyser->mRandom[0].mSeed4);
+                    textWriter->printf("Random Seed2: %08X %08X %08X %08X\n", mEventGeyser->mRandom[0].mSeed1, mEventGeyser->mRandom[1].mSeed2, mEventGeyser->mRandom[1].mSeed3, mEventGeyser->mRandom[1].mSeed4);
+                    if (Game::Coop::Utl::GetEventType() == 2)
+                        textWriter->printf("EventGeyser: (%c, %c)\n", mEventGeyser->getGeyserSuccPos(), mEventGeyser->getGeyserGoalPos());
+                    if (mPlayerDirector != NULL)
+                    {
+                        if (Collector::mController.isPressed(Controller::Buttons::UpDpad))
+                        {
+                            mPlayerDirector->pickGoldenIkura(0);
+                            mPlayerDirector->bankGoldenIkura(0);
+                        }
+                        if (Collector::mController.isPressed(Controller::Buttons::DownDpad))
+                        {
+                            Game::PlayerCoopGoldenIkura *mPlayerCoopGoldenIkura = mPlayer->mPlayerCoopGoldenIkura;
+                        }
+                        if (Collector::mController.isPressed(Controller::Buttons::RightDpad))
+                        {
+                            mPlayerDirector->lostCashedGoldenIkura();
+                        }
+                        if (Collector::mController.isPressed(Controller::Buttons::LeftDpad))
+                        {
+                            mPlayerDirector->lostBankedGoldenIkura(0);
+                        }
+                    }
                 }
             }
-        }
-    }
-
-    // Display Coop Setting
-    if (mCoopSetting != NULL)
-    {
-        for (int i = 0; i < 3; i++)
-        {
-            textWriter->printf("WAVE%d Tide: %X Event: %X\n", i + 1, mCoopSetting->mWave[i].tide, mCoopSetting->mWave[i].event);
-        }
-        if (mPlayerDirector != NULL)
-        {
-            Game::Coop::Player player = mPlayerDirector->mPlayer[0];
-            textWriter->printf("Power: %05d Got: %s Round %03d Total: %03d\n", player.mRoundBankedPowerIkuraNum, (player.mGotGoldenIkuraNum ? "True" : "False"), player.mRoundBankedGoldenIkuraNum, player.mTotalBankedGoldenIkuraNum);
         }
     }
 
     // Display EnemyDirector
-    if (mEnemyDirector != NULL) {
-        textWriter->printf("Random Seed1: %08X %08X %08X %08X\n", mEnemyDirector->mRandom[0].mSeed1, mEnemyDirector->mRandom[0].mSeed2, mEnemyDirector->mRandom[0].mSeed3, mEnemyDirector->mRandom[0].mSeed4);
-        textWriter->printf("Random Seed2: %08X %08X %08X %08X\n", mEnemyDirector->mRandom[0].mSeed1, mEnemyDirector->mRandom[1].mSeed2, mEnemyDirector->mRandom[1].mSeed3, mEnemyDirector->mRandom[1].mSeed4);
-    } 
-
-    // Display EventGeyser
-    if (mEventDirector != NULL)
-    {
-        mEventGeyser = mEventDirector->eventGeyser;
-        
-        if (mEventGeyser != NULL)
-        {
-            textWriter->printf("Random Seed1: %08X %08X %08X %08X\n", mEventGeyser->mRandom[0].mSeed1, mEventGeyser->mRandom[0].mSeed2, mEventGeyser->mRandom[0].mSeed3, mEventGeyser->mRandom[0].mSeed4);
-            textWriter->printf("Random Seed2: %08X %08X %08X %08X\n", mEventGeyser->mRandom[0].mSeed1, mEventGeyser->mRandom[1].mSeed2, mEventGeyser->mRandom[1].mSeed3, mEventGeyser->mRandom[1].mSeed4);
-            if (Game::Coop::Utl::GetEventType() == 2)
-                textWriter->printf("EventGeyser: (%c, %c)\n", mEventGeyser->getGeyserSuccPos(), mEventGeyser->getGeyserGoalPos());
-            if (mPlayerDirector != NULL)
-            {
-                if (Collector::mController.isPressed(Controller::Buttons::UpDpad))
-                {
-                    mPlayerDirector->pickGoldenIkura(0);
-                    mPlayerDirector->bankGoldenIkura(0);
-                }
-                if (Collector::mController.isPressed(Controller::Buttons::DownDpad))
-                {
-                    mPlayerDirector->pickGoldenIkura(0);
-                }
-                if (Collector::mController.isPressed(Controller::Buttons::RightDpad))
-                {
-                    mPlayerDirector->lostCashedGoldenIkura();
-                }
-                if (Collector::mController.isPressed(Controller::Buttons::LeftDpad))
-                {
-                    mPlayerDirector->lostBankedGoldenIkura(0);
-                }
-            }
-        }
-    }
+    // if (mEnemyDirector != NULL) {
+    //     textWriter->printf("Random Seed1: %08X %08X %08X %08X\n", mEnemyDirector->mRandom[0].mSeed1, mEnemyDirector->mRandom[0].mSeed2, mEnemyDirector->mRandom[0].mSeed3, mEnemyDirector->mRandom[0].mSeed4);
+    //     textWriter->printf("Random Seed2: %08X %08X %08X %08X\n", mEnemyDirector->mRandom[0].mSeed1, mEnemyDirector->mRandom[1].mSeed2, mEnemyDirector->mRandom[1].mSeed3, mEnemyDirector->mRandom[1].mSeed4);
+    // }
 
     mView->update();
     mView->render(mTextWriter);
