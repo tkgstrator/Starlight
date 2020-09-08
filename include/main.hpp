@@ -16,6 +16,7 @@
 #include "sead/matrix.h"
 #include "sead/arena.h"
 #include "sead/system.h"
+#include "Cmn/Singleton.h"
 #include "Cmn/StaticMem.h"
 #include "Cmn/CameraUtl.h"
 #include "Cmn/PlayerInfoUtil.h"
@@ -53,7 +54,7 @@ enum Modes {
     NONE, FLY, EVENT_VIEWER, INPUT_VIEWER, PLAYER_SWITCHER, PAINT_ALL, END
 };
 
-void renderEntrypoint(agl::DrawContext *drawContext, sead::TextWriter *textWriter, Game::Coop::Setting *coopSetting, Game::Coop::EventGeyser *eventGeyser, Game::Coop::PlayerDirector *playerDirector, Game::Coop::EnemyDirector *enemyDirector);
+void renderEntrypoint(agl::DrawContext *drawContext, sead::TextWriter *textWriter);
 
 void allocHeap();
 
