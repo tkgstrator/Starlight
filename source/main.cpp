@@ -15,11 +15,6 @@ static uint64_t first;
 static uint64_t offset;
 // static Lp::Sys::Actor *mActor;
 static Game::PlayerMgr *mPlayerMgr;
-static Game::Coop::Setting *mCoopSetting;
-static Game::Coop::EventGeyser *mEventGeyser;
-static Game::Coop::EnemyDirector *mEnemyDirector;
-static Game::Coop::EventDirector *mEventDirector;
-static Game::Coop::PlayerDirector *mPlayerDirector;
 static sead::ExpHeap *mStarlightHeap;
 static View *mView;
 static int mode;
@@ -49,14 +44,15 @@ uint64_t readU64(uint64_t *p, uint64_t offset)
     return res;
 }
 
-void renderEntrypoint(agl::DrawContext *drawContext, sead::TextWriter *textWriter, Game::Coop::Setting *coopSetting, Game::Coop::EventDirector *eventDirector, Game::Coop::PlayerDirector *playerDirector, Game::Coop::EnemyDirector *enemyDirector)
+void renderEntrypoint(agl::DrawContext *drawContext, sead::TextWriter *textWriter) 
 {
+    Game::Coop::Setting *mCoopSetting = Cmn::Singleton<Game::Coop::Setting>::GetInstance_();
+    Game::Coop::EventGeyser *mEventGeyser = Cmn::Singleton<Game::Coop::EventGeyser>::GetInstance_();
+    Game::Coop::EnemyDirector *mEnemyDirector = Cmn::Singleton<Game::Coop::EnemyDirector>::GetInstance_();
+    Game::Coop::EventDirector *mEventDirector = Cmn::Singleton<Game::Coop::EventDirector>::GetInstance_();
+    Game::Coop::PlayerDirector *mPlayerDirector = Cmn::Singleton<Game::Coop::PlayerDirector>::GetInstance_();
     mDrawContext = drawContext;
     mTextWriter = textWriter;
-    mCoopSetting = coopSetting;
-    mEventDirector = eventDirector;
-    mEnemyDirector = enemyDirector;
-    mPlayerDirector = playerDirector;
 
     // Setting mTextWriter
     fontSize.mX = fontSize.mY = 1.5;
@@ -89,7 +85,7 @@ void renderEntrypoint(agl::DrawContext *drawContext, sead::TextWriter *textWrite
 
     // textWriter->printf("Current heap name: %s\n", Collector::mHeapMgr->getCurrentHeap()->mName.mCharPtr);
     // textWriter->printf("Current heap free space: 0x%x\n", Collector::mHeapMgr->getCurrentHeap()->getFreeSize());
-    mTextWriter->printf("Welcome to Starlight!\n");
+    mTextWriter->printf("Welcome to Starlight!!\n");
     Game::PlayerMgr *mPlayerMgr = Collector::mPlayerMgrInstance;
 
     if (mPlayerMgr != NULL)

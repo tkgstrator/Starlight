@@ -10,8 +10,8 @@ namespace Game
     public:
         PlayerCoopGoldenIkura();
         ~PlayerCoopGoldenIkura();
-        Game::Player *mPlayer;
-        Game::PlayerModel *mPlayerModel;
+        // Game::Player *mPlayer;
+        // Game::PlayerModel *mPlayerModel;
         _DWORD mOnActive;
         _QWORD mAnimSetController; // Game::AnimSetController
     };
