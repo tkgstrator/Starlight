@@ -11,12 +11,12 @@
 
 namespace sead
 {
-    template<typename T>
+    template <typename T>
     class ConstPtrArray
     {
     public:
         u64 mNumPtrs; // _0
-        u64* mPtrs; // _8
+        u64 *mPtrs;   // _8
     };
 
     class PtrArrayImpl
@@ -38,16 +38,14 @@ namespace sead
         void uniq(s32 (*)(void const *, void const *));
         s32 binarySearch(void const *, s32 (*)(void const *, void const *)) const;
 
-        u32 mLength; //0x3B8
-        u64 *ptr; // 0x3C0
-        s32 mBufferSize; // _4 ?
-        void* mBuffer; // _8 ?
+        u32 mLength;
+        u64 *ptr;
     };
 
-    template<typename T>
+    template <typename T>
     class ObjArray
     {
     public:
         bool compareT(T const *, T const *);
     };
-};
+}; // namespace sead

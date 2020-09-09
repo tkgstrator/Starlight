@@ -44,7 +44,7 @@ uint64_t readU64(uint64_t *p, uint64_t offset)
     return res;
 }
 
-void renderEntrypoint(agl::DrawContext *drawContext, sead::TextWriter *textWriter) 
+void renderEntrypoint(agl::DrawContext *drawContext, sead::TextWriter *textWriter)
 {
     Game::Coop::Setting *mCoopSetting = Cmn::Singleton<Game::Coop::Setting>::GetInstance_();
     Game::Coop::EventGeyser *mEventGeyser = Cmn::Singleton<Game::Coop::EventGeyser>::GetInstance_();
@@ -86,60 +86,43 @@ void renderEntrypoint(agl::DrawContext *drawContext, sead::TextWriter *textWrite
     // textWriter->printf("Current heap name: %s\n", Collector::mHeapMgr->getCurrentHeap()->mName.mCharPtr);
     // textWriter->printf("Current heap free space: 0x%x\n", Collector::mHeapMgr->getCurrentHeap()->getFreeSize());
     mTextWriter->printf("Welcome to Starlight!!\n");
-    Game::PlayerMgr *mPlayerMgr = Collector::mPlayerMgrInstance;
+    // Game::PlayerMgr *mPlayerMgr = Collector::mPlayerMgrInstance;
 
-    if (mPlayerMgr != NULL)
+    // Display Coop Setting
+    if (mCoopSetting != NULL)
     {
-        Game::Player *mPlayer = mPlayerMgr->getControlledPerformer();
-        if (mPlayer != NULL)
+        textWriter->printf("WAVE Tide: %X Event: %X\n", mCoopSetting->present.tide, mCoopSetting->present.event);
+        for (uint32_t idx = 0; idx < 3; ++idx)
         {
-            textWriter->printf("Game::Player: (%03d, %03d, %03d)\n", int(mPlayer->mPosition.mX), int(mPlayer->mPosition.mZ), int(mPlayer->mPosition.mY));
+            textWriter->printf("WAVE%d Tide: %X Event: %X\n", idx + 1, mCoopSetting->mWave[idx].tide, mCoopSetting->mWave[idx].event);
         }
-        // Display Coop Setting
-        if (mCoopSetting != NULL)
-        {
-            for (int i = 0; i < 3; i++)
-            {
-                textWriter->printf("WAVE%d Tide: %X Event: %X\n", i + 1, mCoopSetting->mWave[i].tide, mCoopSetting->mWave[i].event);
-            }
-            if (mPlayerDirector != NULL)
-            {
-                Game::Coop::Player player = mPlayerDirector->mPlayer[0];
-                textWriter->printf("Power: %05d Got: %s Round %03d Total: %03d\n", player.mRoundBankedPowerIkuraNum, (player.mGotGoldenIkuraNum ? "True" : "False"), player.mRoundBankedGoldenIkuraNum, player.mTotalBankedGoldenIkuraNum);
-            }
-            // Display EventGeyser
-            if (mEventDirector != NULL)
-            {
-                mEventGeyser = mEventDirector->eventGeyser;
 
-                if (mEventGeyser != NULL)
-                {
-                    textWriter->printf("Random Seed1: %08X %08X %08X %08X\n", mEventGeyser->mRandom[0].mSeed1, mEventGeyser->mRandom[0].mSeed2, mEventGeyser->mRandom[0].mSeed3, mEventGeyser->mRandom[0].mSeed4);
-                    textWriter->printf("Random Seed2: %08X %08X %08X %08X\n", mEventGeyser->mRandom[0].mSeed1, mEventGeyser->mRandom[1].mSeed2, mEventGeyser->mRandom[1].mSeed3, mEventGeyser->mRandom[1].mSeed4);
-                    if (Game::Coop::Utl::GetEventType() == 2)
-                        textWriter->printf("EventGeyser: (%c, %c)\n", mEventGeyser->getGeyserSuccPos(), mEventGeyser->getGeyserGoalPos());
-                    if (mPlayerDirector != NULL)
-                    {
-                        if (Collector::mController.isPressed(Controller::Buttons::UpDpad))
-                        {
-                            mPlayerDirector->pickGoldenIkura(0);
-                            mPlayerDirector->bankGoldenIkura(0);
-                        }
-                        if (Collector::mController.isPressed(Controller::Buttons::DownDpad))
-                        {
-                            Game::PlayerCoopGoldenIkura *mPlayerCoopGoldenIkura = mPlayer->mPlayerCoopGoldenIkura;
-                        }
-                        if (Collector::mController.isPressed(Controller::Buttons::RightDpad))
-                        {
-                            mPlayerDirector->lostCashedGoldenIkura();
-                        }
-                        if (Collector::mController.isPressed(Controller::Buttons::LeftDpad))
-                        {
-                            mPlayerDirector->lostBankedGoldenIkura(0);
-                        }
-                    }
-                }
+        if (mEnemyDirector != NULL)
+        {
+            textWriter->printf("EnemyAppearId: %X\n", mEnemyDirector->mEnemyAppearId);
+            for (uint32_t idx = 0; idx < 3; ++idx)
+            {
+                textWriter->printf("ActiveMax: %X, EnemyArray %X \n", mEnemyDirector->mActiveEnemyMax[idx], mEnemyDirector->mEnemy[idx].mArray);
             }
+        }
+
+        if (Collector::mController.isPressed(Controller::Buttons::LeftDpad))
+        {
+            mCoopSetting->preview.tide = mCoopSetting->present.tide;
+            mCoopSetting->present.tide = (mCoopSetting->present.tide + 1) % 3;
+            mCoopSetting->startChangeWaterLevel(0x12C);
+        }
+
+        if (Collector::mController.isPressed(Controller::Buttons::RightDpad))
+        {
+            // Change Event
+            mCoopSetting->present.event = (mCoopSetting->present.event + 1) % 7;
+
+            // Change Weather
+            mCoopSetting->preview.weather = mCoopSetting->present.event != 0 ? mCoopSetting->present.event == 5 ? 2 : 1 : 0;
+            mCoopSetting->present.weather = mCoopSetting->present.event != 0 ? mCoopSetting->present.event == 5 ? 2 : 1 : 0;
+            mCoopSetting->startChangeWeather(Game::Coop::Setting::WeatherChangePhase::Sunny, 0x12C);
+            mEventDirector->start();
         }
     }
 
@@ -314,10 +297,10 @@ void handlePlayerMgr(Game::PlayerMgr *playerMgr)
         if (Collector::mController.isPressed(Controller::Buttons::DownDpad))
             currentPlayer--;
 
-        if (currentPlayer < 0)
-            currentPlayer = playerMgr->mTotalPlayerArry.mBufferSize;
-        if (playerMgr->mTotalPlayerArry.mBufferSize <= currentPlayer)
-            currentPlayer = 0;
+        // if (currentPlayer < 0)
+        //     currentPlayer = playerMgr->mTotalPlayerArry.mBufferSize;
+        // if (playerMgr->mTotalPlayerArry.mBufferSize <= currentPlayer)
+        //     currentPlayer = 0;
 
         playerMgr->mCurrentPlayerIndex = currentPlayer;
         playerMgr->onChangeControlledPlayer();

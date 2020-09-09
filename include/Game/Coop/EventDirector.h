@@ -16,13 +16,13 @@ namespace Game
         public:
             _BYTE stateMachine[0x50];
         };
-        
+
         class EventRush : public Cmn::Actor
         {
         public:
             _BYTE stateMachine[0x50];
         };
-        
+
         class EventGeyser : public Cmn::Actor
         {
         public:
@@ -33,9 +33,11 @@ namespace Game
             _QWORD dword3D0;
             _QWORD dword3D8;
 
-            u64 getGeyserSuccPos(void) {
+            u64 getGeyserSuccPos(void)
+            {
                 u64 *ptr = this->ptrArray.ptr;
-                if (ptr != NULL) {
+                if (ptr != NULL)
+                {
                     u64 index = u64(ptr[0]);
                     for (int i = 0; i < this->ptrArray.mLength; i++)
                     {
@@ -47,9 +49,11 @@ namespace Game
                 return 65;
             }
 
-            u64 getGeyserGoalPos(void) {
+            u64 getGeyserGoalPos(void)
+            {
                 u64 *ptr = this->ptrArray.ptr;
-                if (ptr != NULL) {
+                if (ptr != NULL)
+                {
                     u64 index = u64(ptr[0]);
                     for (int i = 0; i < this->ptrArray.mLength; i++)
                     {
@@ -115,6 +119,10 @@ namespace Game
             Game::Coop::EventRally *eventRally;
             Game::Coop::EventFog *eventFog;
             Game::Coop::EventMissile *eventMissile;
+
+            void ready();
+            void start();
+            void end();
         };
     }; // namespace Coop
 };     // namespace Game

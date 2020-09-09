@@ -11,18 +11,18 @@ namespace Game
 {
     namespace Coop
     {
-        class EnemyDirector : public Cmn::Actor, sead::IDisposer
+        class EnemyArray
         {
         public:
-            sead::PtrArrayImpl mEnemyArray1;
-            char char378;
-            _BYTE gap379[183];
-            sead::PtrArrayImpl mEnemyArray2;
-            char char440;
-            _BYTE gap441[183];
-            sead::PtrArrayImpl mEnemyArray3;
-            char char508;
-            _BYTE gap509[183];
+            sead::PtrArrayImpl mArray;
+            char mBuffer;
+            _BYTE gap_0x11[183];
+        };
+
+        class EnemyDirector : Cmn::Actor, sead::IDisposer
+        {
+        public:
+            Game::Coop::EnemyArray mEnemy[3];
             _QWORD qword5C0;
             _DWORD dword5C8;
             sead::Random mRandom[2];
@@ -36,10 +36,9 @@ namespace Game
             _DWORD dword620;
             _BYTE gap624[4];
             _QWORD qword628;
-            _DWORD dword630;
+            _DWORD mEnemyAppearId;
             _BYTE gap634[96];
-            _DWORD mActiveEnemyMax1;
-            _DWORD mActiveEnemyMax2;
+            _DWORD mActiveEnemyMax[2];
             _DWORD mActiveEnemyNum;
             _BYTE gap694[240];
             _DWORD dword76C;
