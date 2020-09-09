@@ -9,9 +9,9 @@ namespace Game
         class Wave
         {
         public:
-            _DWORD seed1;
+            _DWORD weather;
             _DWORD tide;
-            _DWORD seed2;
+            _DWORD seed;
             _DWORD gap0xC;
             _DWORD event;
         };
@@ -19,6 +19,12 @@ namespace Game
         class Setting : public Cmn::Actor, public sead::IDisposer
         {
         public:
+            enum class WeatherChangePhase
+            {
+                Sunny = 0,
+                Cloudy = 1,
+                Foggy = 2,
+            };
             _BYTE gap368[16];
             _QWORD qword378;
             _BYTE gap380[1144];
@@ -54,6 +60,9 @@ namespace Game
             Game::Coop::Wave present;
             Game::Coop::Wave preview;
             Game::Coop::Wave mWave[3];
+
+            void startChangeWaterLevel(int);
+            void startChangeWeather(Game::Coop::Setting::WeatherChangePhase, int);
         };
 
     }; // namespace Coop
