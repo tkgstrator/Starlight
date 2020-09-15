@@ -40,6 +40,7 @@
 #include "Game/Coop/Setting.h"
 #include "Game/Coop/GoldenIkura.h"
 #include "Game/Coop/EnemyDirector.h"
+#include "Game/Coop/Enemy.h"
 #include "Game/Coop/EventDirector.h"
 #include "Game/Coop/PlayerDirector.h"
 #include "MiniGame/gfx.h"
@@ -50,8 +51,15 @@
 #include "starlight/menu/simplemenu.hpp"
 #include "starlight/menu/popmenuentry.hpp"
 
-enum Modes {
-    NONE, FLY, EVENT_VIEWER, INPUT_VIEWER, PLAYER_SWITCHER, PAINT_ALL, END
+enum Modes
+{
+    NONE,
+    FLY,
+    EVENT_VIEWER,
+    INPUT_VIEWER,
+    PLAYER_SWITCHER,
+    PAINT_ALL,
+    END
 };
 
 void renderEntrypoint(agl::DrawContext *drawContext, sead::TextWriter *textWriter);
@@ -60,14 +68,12 @@ void allocHeap();
 
 void drawBackground();
 void handleStaticMem(Cmn::StaticMem *staticMem);
-void handlePlayerMgr(Game::PlayerMgr* playerMgr);
-void handlePlayerControl(Cmn::PlayerCtrl* playerCtrl);
-void handleMushDataHolder(Cmn::MushDataHolder* mushDataHolder);
-void handleMainMgr(Game::MainMgr* mainMgr);
-void handleGfxSetting(Cmn::GfxSetting*);
+void handlePlayerMgr(Game::PlayerMgr *playerMgr);
+void handlePlayerControl(Cmn::PlayerCtrl *playerCtrl);
+void handleMushDataHolder(Cmn::MushDataHolder *mushDataHolder);
+void handleMainMgr(Game::MainMgr *mainMgr);
+void handleGfxSetting(Cmn::GfxSetting *);
 
-char const* modeToText(Modes);
+char const *modeToText(Modes);
 
-
-
-char const* modeToText(Modes);
+char const *modeToText(Modes);

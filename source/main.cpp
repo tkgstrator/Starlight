@@ -19,9 +19,10 @@ static sead::ExpHeap *mStarlightHeap;
 static View *mView;
 static int mode;
 static bool showMenu;
-static uint32_t state;
-static uint32_t dist[N][N];
-static uint32_t count[N][N] = {0};
+static uint32_t state = 0x0;
+static uint32_t size = 0x0;
+static uint32_t tmp = 0x0;
+static uint32_t mSeeds[16][4] = {0x0};
 static sead::Vector2<float> fontSize;
 
 uint32_t readU32(uint32_t *p, uint32_t offset)
@@ -85,7 +86,7 @@ void renderEntrypoint(agl::DrawContext *drawContext, sead::TextWriter *textWrite
 
     // textWriter->printf("Current heap name: %s\n", Collector::mHeapMgr->getCurrentHeap()->mName.mCharPtr);
     // textWriter->printf("Current heap free space: 0x%x\n", Collector::mHeapMgr->getCurrentHeap()->getFreeSize());
-    mTextWriter->printf("Welcome to Starlight!!\n");
+    mTextWriter->printf("Welcome to Starlight!\n");
     // Game::PlayerMgr *mPlayerMgr = Collector::mPlayerMgrInstance;
 
     // Display Coop Setting
@@ -100,12 +101,46 @@ void renderEntrypoint(agl::DrawContext *drawContext, sead::TextWriter *textWrite
         if (mEnemyDirector != NULL)
         {
             textWriter->printf("EnemyAppearId: %X\n", mEnemyDirector->mEnemyAppearId);
-            for (uint32_t idx = 0; idx < 3; ++idx)
+            textWriter->printf("ActiveMax: %02d / %02d\n", mEnemyDirector->mActiveEnemyNum, mEnemyDirector->mActiveEnemyMax);
+            // textWriter->printf("ActiveMax: %02d / %02d\n", mEnemyDirector->mActiveEnemyNum, mEnemyDirector->mActiveEnemyMax[1]);
+            // textWriter->printf("EnemyArray: %03d\n", mEnemyDirector->mEnemy[0].ptrArray.mLength);
+
+            textWriter->printf("sead::Random[0] %02d %08X %08X %08X %08X\n", size, mEnemyDirector->mRandom[0].mSeed1, mEnemyDirector->mRandom[0].mSeed2, mEnemyDirector->mRandom[0].mSeed3, mEnemyDirector->mRandom[0].mSeed4);
+            // textWriter->printf("sead::Random[1] %08X %08X %08X %08X\n", mEnemyDirector->mRandom[1].mSeed1, mEnemyDirector->mRandom[1].mSeed2, mEnemyDirector->mRandom[1].mSeed3, mEnemyDirector->mRandom[1].mSeed4);
+
+            if (tmp != mEnemyDirector->mRandom[0].mSeed1)
             {
-                textWriter->printf("ActiveMax: %X, EnemyArray %X \n", mEnemyDirector->mActiveEnemyMax[idx], mEnemyDirector->mEnemy[idx].mArray);
+                mSeeds[state][0] = mEnemyDirector->mRandom[0].mSeed1;
+                mSeeds[state][1] = mEnemyDirector->mRandom[0].mSeed2;
+                mSeeds[state][2] = mEnemyDirector->mRandom[0].mSeed3;
+                mSeeds[state][3] = mEnemyDirector->mRandom[0].mSeed4;
+                tmp = mEnemyDirector->mRandom[0].mSeed1;
+                state = (state + 1) % 16;
+                size += 1;
+            }
+
+            for (int32_t idx = 0; idx < 16; ++idx)
+                textWriter->printf("Seed: %02d %08X\n", idx, mSeeds[idx][0]);
+            // textWriter->printf("Seed: %d (%08X %08X %08X %08X)\n", idx - 2, mSeeds[idx][0], mSeeds[idx][1], mSeeds[idx][2], mSeeds[idx][3]);
+        }
+        else
+        {
+            state = 0x0;
+            size = 0x0;
+            for (int32_t idx = 0; idx < 10; ++idx)
+            {
+                mSeeds[idx][0] = 0x0;
+                mSeeds[idx][1] = 0x0;
+                mSeeds[idx][2] = 0x0;
+                mSeeds[idx][3] = 0x0;
             }
         }
-
+        if (Collector::mController.isPressed(Controller::Buttons::LeftDpad))
+        {
+            mPlayerDirector->pickGoldenIkura(0);
+            mPlayerDirector->bankGoldenIkura(0);
+        }
+        /*
         if (Collector::mController.isPressed(Controller::Buttons::LeftDpad))
         {
             mCoopSetting->preview.tide = mCoopSetting->present.tide;
@@ -115,20 +150,21 @@ void renderEntrypoint(agl::DrawContext *drawContext, sead::TextWriter *textWrite
 
         if (Collector::mController.isPressed(Controller::Buttons::RightDpad))
         {
-            // Change Event
-            mCoopSetting->present.event = (mCoopSetting->present.event + 1) % 7;
+            // change event
+            mcoopsetting->present.event = (mcoopsetting->present.event + 1) % 7;
 
-            // Change Weather
-            mCoopSetting->preview.weather = mCoopSetting->present.event != 0 ? mCoopSetting->present.event == 5 ? 2 : 1 : 0;
-            mCoopSetting->present.weather = mCoopSetting->present.event != 0 ? mCoopSetting->present.event == 5 ? 2 : 1 : 0;
-            mCoopSetting->startChangeWeather(Game::Coop::Setting::WeatherChangePhase::Sunny, 0x12C);
-            mEventDirector->start();
+            // change weather
+            mcoopsetting->preview.weather = mcoopsetting->present.event != 0 ? mcoopsetting->present.event == 5 ? 2 : 1 : 0;
+            mcoopsetting->present.weather = mcoopsetting->present.event != 0 ? mcoopsetting->present.event == 5 ? 2 : 1 : 0;
+            mcoopsetting->startchangeweather(game::coop::setting::weatherchangephase::sunny, 0x12c);
+            meventdirector->start();
         }
+        */
     }
 
-    // Display EnemyDirector
-    // if (mEnemyDirector != NULL) {
-    //     textWriter->printf("Random Seed1: %08X %08X %08X %08X\n", mEnemyDirector->mRandom[0].mSeed1, mEnemyDirector->mRandom[0].mSeed2, mEnemyDirector->mRandom[0].mSeed3, mEnemyDirector->mRandom[0].mSeed4);
+    // display enemydirector
+    // if (menemydirector != null) {
+    //     textwriter->printf("random seed1: %08x %08x %08x %08x\n", menemydirector->mrandom[0].mseed1, menemydirector->mrandom[0].mseed2, menemydirector->mrandom[0].mseed3, menemydirector->mrandom[0].mseed4);
     //     textWriter->printf("Random Seed2: %08X %08X %08X %08X\n", mEnemyDirector->mRandom[0].mSeed1, mEnemyDirector->mRandom[1].mSeed2, mEnemyDirector->mRandom[1].mSeed3, mEnemyDirector->mRandom[1].mSeed4);
     // }
 
