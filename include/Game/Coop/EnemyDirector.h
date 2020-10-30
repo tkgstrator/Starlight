@@ -35,8 +35,8 @@ namespace Game
             _QWORD qword618;
             _DWORD dword620;
             _BYTE gap624[4];
-            _QWORD qword628;
-            _DWORD mEnemyAppearId;
+            int32_t *dword628;
+            int32_t mEnemyAppearId;
             _BYTE gap634[100];
             _DWORD mActiveEnemyMax;
             _DWORD mActiveEnemyNum;

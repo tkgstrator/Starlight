@@ -14,7 +14,6 @@ static sead::TextWriter *mTextWriter;
 static uint64_t first;
 static uint64_t offset;
 // static Lp::Sys::Actor *mActor;
-static Game::PlayerMgr *mPlayerMgr;
 static sead::ExpHeap *mStarlightHeap;
 static View *mView;
 static int mode;
@@ -35,6 +34,16 @@ uint32_t readU32(uint32_t *p, uint32_t offset)
     return res;
 }
 
+int32_t read32(uint32_t *p, uint32_t offset)
+{
+    int32_t res;
+    asm volatile("LDR %[result], [%[base], %[offset]]"
+                 : [ result ] "=r"(res)
+                 : [ base ] "r"(p), [ offset ] "r"(offset)
+                 :);
+    return res;
+}
+
 uint64_t readU64(uint64_t *p, uint64_t offset)
 {
     uint32_t res;
@@ -48,10 +57,12 @@ uint64_t readU64(uint64_t *p, uint64_t offset)
 void renderEntrypoint(agl::DrawContext *drawContext, sead::TextWriter *textWriter)
 {
     Game::Coop::Setting *mCoopSetting = Cmn::Singleton<Game::Coop::Setting>::GetInstance_();
-    Game::Coop::EventGeyser *mEventGeyser = Cmn::Singleton<Game::Coop::EventGeyser>::GetInstance_();
+    // Game::Coop::Setting *mLevelsConfig = Cmn::Singleton<Game::Coop::LevelsConfig>::GetInstance_();
     Game::Coop::EnemyDirector *mEnemyDirector = Cmn::Singleton<Game::Coop::EnemyDirector>::GetInstance_();
     Game::Coop::EventDirector *mEventDirector = Cmn::Singleton<Game::Coop::EventDirector>::GetInstance_();
     Game::Coop::PlayerDirector *mPlayerDirector = Cmn::Singleton<Game::Coop::PlayerDirector>::GetInstance_();
+    Game::MainMgr *mainMgr = Collector::mMainMgrInstance;
+    Game::PlayerMgr *mPlayerMgr = Collector::mPlayerMgrInstance;
     mDrawContext = drawContext;
     mTextWriter = textWriter;
 
@@ -87,7 +98,31 @@ void renderEntrypoint(agl::DrawContext *drawContext, sead::TextWriter *textWrite
     // textWriter->printf("Current heap name: %s\n", Collector::mHeapMgr->getCurrentHeap()->mName.mCharPtr);
     // textWriter->printf("Current heap free space: 0x%x\n", Collector::mHeapMgr->getCurrentHeap()->getFreeSize());
     mTextWriter->printf("Welcome to Starlight!\n");
-    // Game::PlayerMgr *mPlayerMgr = Collector::mPlayerMgrInstance;
+
+    // チーム変更コード
+    if (mPlayerMgr != NULL)
+    {
+        if (Collector::mController.isPressed(Controller::Buttons::UpDpad))
+        {
+            Game::Player *mPlayer = mPlayerMgr->getControlledPerformer();
+            if (mPlayer != NULL)
+            {
+                mPlayer->mPlayerInfo->mTeam ^= 1;
+                mPlayer->mTeam = bool(readU64(uint64_t(mPlayer), 0x328)) ^ 1;
+            }
+        }
+
+        // 全塗り
+        if (Collector::mController.isPressed(Controller::Buttons::LStick))
+        {
+            unsigned int paintGameFrame = mainMgr->getPaintGameFrame();
+            Cmn::Def::Team team = Cmn::Def::Team::Alpha;
+            if (Collector::mControlledPlayer != NULL)
+                team = Collector::mControlledPlayer->mTeam;
+            Game::PaintUtl::requestAllPaintFloor(paintGameFrame, team);
+            Game::PaintUtl::requestAllPaintWall(paintGameFrame, team);
+        }
+    }
 
     // Display Coop Setting
     if (mCoopSetting != NULL)
@@ -98,68 +133,81 @@ void renderEntrypoint(agl::DrawContext *drawContext, sead::TextWriter *textWrite
             textWriter->printf("WAVE%d Tide: %X Event: %X\n", idx + 1, mCoopSetting->mWave[idx].tide, mCoopSetting->mWave[idx].event);
         }
 
+        if (mEventDirector != NULL)
+        {
+            Game::Coop::EventGeyser *mEventGeyser = mEventDirector->eventGeyser;
+
+            if (Game::Coop::Utl::GetEventType() == 2)
+            {
+                const sead::Vector3<float> cPlayerPos = Collector::mControlledPlayer->mPosition; // Haxxie
+                if (mEventDirector->eventGeyser != NULL)
+                {
+                    const sead::Vector3<float> cGeyserPos = (*(Game::Coop::SpawnGeyser **)(mEventDirector->eventGeyser->ptrArray.mPtr))->mPosition;
+                    agl::utl::DevTools::beginDrawImm(mDrawContext, sead::Matrix34<float>::ident, sead::Matrix44<float>::ident);
+                    agl::utl::DevTools::drawArrow(mDrawContext, cPlayerPos, cGeyserPos, getRainbowInkColor(), getRainbowInkColor(), 1, getCameraMatrix(cam), *proj->getProjectionMatrix());
+                }
+                sead::PtrArrayImpl geyser = mEventGeyser->ptrArray;
+                uint64_t *ptr = geyser.ptr;
+                Game::Coop::SpawnGeyser **arr = (Game::Coop::SpawnGeyser **)geyser.ptr;
+                sead::Vector3<float> pos = Collector::mControlledPlayer->mPosition;
+                uint32_t dist[9] = {0};
+                for (u16 idx = 0; idx < geyser.mLength; idx++)
+                {
+                    Game::Coop::SpawnGeyser *str = arr[idx];
+                    dist[idx] = (uint32_t)sqrt(pow((str->vector.mX - pos.mX), 2) + pow((str->vector.mY - pos.mY), 2) + pow((str->vector.mZ - pos.mZ), 2));
+                }
+                switch (geyser.mLength)
+                {
+                case 7:
+                    textWriter->printf("%03d %03d %03d %03d %03d %03d %03d\n", dist[0], dist[1], dist[2], dist[3], dist[4], dist[5], dist[6]);
+                    break;
+                case 8:
+                    textWriter->printf("%03d %03d %03d %03d %03d %03d %03d %03d\n", dist[0], dist[1], dist[2], dist[3], dist[4], dist[5], dist[6], dist[7]);
+                    break;
+                case 9:
+                    textWriter->printf("%03d %03d %03d %03d %03d %03d %03d %03d %03d\n", dist[0], dist[1], dist[2], dist[3], dist[4], dist[5], dist[6], dist[7], dist[8]);
+                    break;
+                default:
+                    textWriter->printf("NO GEYSER\n");
+                }
+            }
+        }
+
         if (mEnemyDirector != NULL)
         {
-            textWriter->printf("EnemyAppearId: %X\n", mEnemyDirector->mEnemyAppearId);
+            textWriter->printf("EnemyAppearId: %d\n", mEnemyDirector->mEnemyAppearId);
+            if (mEnemyDirector->dword628 != NULL)
+                textWriter->printf("Valiables: %d %d %d %d\n", mEnemyDirector->dword620, read32(mEnemyDirector->dword628, 0x0), read32(mEnemyDirector->dword628, 0x4), read32(mEnemyDirector->dword628, 0x8));
+
             textWriter->printf("ActiveMax: %02d / %02d\n", mEnemyDirector->mActiveEnemyNum, mEnemyDirector->mActiveEnemyMax);
-            // textWriter->printf("ActiveMax: %02d / %02d\n", mEnemyDirector->mActiveEnemyNum, mEnemyDirector->mActiveEnemyMax[1]);
-            // textWriter->printf("EnemyArray: %03d\n", mEnemyDirector->mEnemy[0].ptrArray.mLength);
 
             textWriter->printf("sead::Random[0] %02d %08X %08X %08X %08X\n", size, mEnemyDirector->mRandom[0].mSeed1, mEnemyDirector->mRandom[0].mSeed2, mEnemyDirector->mRandom[0].mSeed3, mEnemyDirector->mRandom[0].mSeed4);
-            // textWriter->printf("sead::Random[1] %08X %08X %08X %08X\n", mEnemyDirector->mRandom[1].mSeed1, mEnemyDirector->mRandom[1].mSeed2, mEnemyDirector->mRandom[1].mSeed3, mEnemyDirector->mRandom[1].mSeed4);
 
-            if (tmp != mEnemyDirector->mRandom[0].mSeed1)
+            if (Collector::mController.isPressed(Controller::Buttons::DownDpad))
             {
-                mSeeds[state][0] = mEnemyDirector->mRandom[0].mSeed1;
-                mSeeds[state][1] = mEnemyDirector->mRandom[0].mSeed2;
-                mSeeds[state][2] = mEnemyDirector->mRandom[0].mSeed3;
-                mSeeds[state][3] = mEnemyDirector->mRandom[0].mSeed4;
-                tmp = mEnemyDirector->mRandom[0].mSeed1;
-                state = (state + 1) % 16;
-                size += 1;
+                mPlayerDirector->pickGoldenIkura(0);
+                mPlayerDirector->bankGoldenIkura(0);
             }
 
-            for (int32_t idx = 0; idx < 16; ++idx)
-                textWriter->printf("Seed: %02d %08X\n", idx, mSeeds[idx][0]);
-            // textWriter->printf("Seed: %d (%08X %08X %08X %08X)\n", idx - 2, mSeeds[idx][0], mSeeds[idx][1], mSeeds[idx][2], mSeeds[idx][3]);
-        }
-        else
-        {
-            state = 0x0;
-            size = 0x0;
-            for (int32_t idx = 0; idx < 10; ++idx)
+            if (Collector::mController.isPressed(Controller::Buttons::LeftDpad))
             {
-                mSeeds[idx][0] = 0x0;
-                mSeeds[idx][1] = 0x0;
-                mSeeds[idx][2] = 0x0;
-                mSeeds[idx][3] = 0x0;
+                mCoopSetting->preview.tide = mCoopSetting->present.tide;
+                mCoopSetting->present.tide = (mCoopSetting->present.tide + 1) % 3;
+                mCoopSetting->startChangeWaterLevel(0x12C);
+            }
+
+            if (Collector::mController.isPressed(Controller::Buttons::RightDpad))
+            {
+                // change event
+                mCoopSetting->present.event = (mCoopSetting->present.event + 1) % 7;
+
+                // change weather
+                mCoopSetting->preview.weather = mCoopSetting->present.event != 0 ? mCoopSetting->present.event == 5 ? 2 : 1 : 0;
+                mCoopSetting->present.weather = mCoopSetting->present.event != 0 ? mCoopSetting->present.event == 5 ? 2 : 1 : 0;
+                mCoopSetting->startChangeWeather(Game::Coop::Setting::WeatherChangePhase::Sunny, 0x12c);
+                mEventDirector->start();
             }
         }
-        if (Collector::mController.isPressed(Controller::Buttons::LeftDpad))
-        {
-            mPlayerDirector->pickGoldenIkura(0);
-            mPlayerDirector->bankGoldenIkura(0);
-        }
-        /*
-        if (Collector::mController.isPressed(Controller::Buttons::LeftDpad))
-        {
-            mCoopSetting->preview.tide = mCoopSetting->present.tide;
-            mCoopSetting->present.tide = (mCoopSetting->present.tide + 1) % 3;
-            mCoopSetting->startChangeWaterLevel(0x12C);
-        }
-
-        if (Collector::mController.isPressed(Controller::Buttons::RightDpad))
-        {
-            // change event
-            mcoopsetting->present.event = (mcoopsetting->present.event + 1) % 7;
-
-            // change weather
-            mcoopsetting->preview.weather = mcoopsetting->present.event != 0 ? mcoopsetting->present.event == 5 ? 2 : 1 : 0;
-            mcoopsetting->present.weather = mcoopsetting->present.event != 0 ? mcoopsetting->present.event == 5 ? 2 : 1 : 0;
-            mcoopsetting->startchangeweather(game::coop::setting::weatherchangephase::sunny, 0x12c);
-            meventdirector->start();
-        }
-        */
     }
 
     // display enemydirector
