@@ -100,113 +100,50 @@ void renderEntrypoint(agl::DrawContext *drawContext, sead::TextWriter *textWrite
     mTextWriter->printf("Welcome to Starlight!\n");
 
     // チーム変更コード
-    if (mPlayerMgr != NULL)
-    {
-        if (Collector::mController.isPressed(Controller::Buttons::UpDpad))
-        {
-            Game::Player *mPlayer = mPlayerMgr->getControlledPerformer();
-            if (mPlayer != NULL)
-            {
-                mPlayer->mPlayerInfo->mTeam ^= 1;
-                mPlayer->mTeam = bool(readU64(uint64_t(mPlayer), 0x328)) ^ 1;
-            }
-        }
+    // if (mPlayerMgr != NULL)
+    // {
+    //     if (Collector::mController.isPressed(Controller::Buttons::UpDpad))
+    //     {
+    //         Game::Player *mPlayer = mPlayerMgr->getControlledPerformer();
+    //         if (mPlayer != NULL)
+    //         {
+    //             mPlayer->mPlayerInfo->mTeam ^= 1;
+    //             mPlayer->mTeam = bool(readU64(uint64_t(mPlayer), 0x328)) ^ 1;
+    //         }
+    //     }
 
-        // 全塗り
-        if (Collector::mController.isPressed(Controller::Buttons::LStick))
-        {
-            unsigned int paintGameFrame = mainMgr->getPaintGameFrame();
-            Cmn::Def::Team team = Cmn::Def::Team::Alpha;
-            if (Collector::mControlledPlayer != NULL)
-                team = Collector::mControlledPlayer->mTeam;
-            Game::PaintUtl::requestAllPaintFloor(paintGameFrame, team);
-            Game::PaintUtl::requestAllPaintWall(paintGameFrame, team);
-        }
-    }
+    //     // 全塗り
+    //     if (Collector::mController.isPressed(Controller::Buttons::LStick))
+    //     {
+    //         unsigned int paintGameFrame = mainMgr->getPaintGameFrame();
+    //         Cmn::Def::Team team = Cmn::Def::Team::Alpha;
+    //         if (Collector::mControlledPlayer != NULL)
+    //             team = Collector::mControlledPlayer->mTeam;
+    //         Game::PaintUtl::requestAllPaintFloor(paintGameFrame, team);
+    //         Game::PaintUtl::requestAllPaintWall(paintGameFrame, team);
+    //     }
+    // }
 
     // Display Coop Setting
     if (mCoopSetting != NULL)
     {
         textWriter->printf("WAVE Tide: %X Event: %X\n", mCoopSetting->present.tide, mCoopSetting->present.event);
-        for (uint32_t idx = 0; idx < 3; ++idx)
-        {
-            textWriter->printf("WAVE%d Tide: %X Event: %X\n", idx + 1, mCoopSetting->mWave[idx].tide, mCoopSetting->mWave[idx].event);
-        }
 
-        if (mEventDirector != NULL)
+        if (mPlayerDirector != NULL)
         {
-            Game::Coop::EventGeyser *mEventGeyser = mEventDirector->eventGeyser;
+            for(u8 idx = 0; idx < 0x4; ++idx) 
+                textWriter->printf("%X %X %X %X\n", read32(uint32_t(mPlayerDirector), 0x0 + 0x10 * idx), read32(uint32_t(mPlayerDirector), 0x4 + 0x10 * idx), read32(uint32_t(mPlayerDirector), 0x8 + 0x10 * idx), read32(uint32_t(mPlayerDirector), 0xC + 0x10 * idx));
 
-            if (Game::Coop::Utl::GetEventType() == 2)
-            {
-                const sead::Vector3<float> cPlayerPos = Collector::mControlledPlayer->mPosition; // Haxxie
-                if (mEventDirector->eventGeyser != NULL)
-                {
-                    const sead::Vector3<float> cGeyserPos = (*(Game::Coop::SpawnGeyser **)(mEventDirector->eventGeyser->ptrArray.mPtr))->mPosition;
-                    agl::utl::DevTools::beginDrawImm(mDrawContext, sead::Matrix34<float>::ident, sead::Matrix44<float>::ident);
-                    agl::utl::DevTools::drawArrow(mDrawContext, cPlayerPos, cGeyserPos, getRainbowInkColor(), getRainbowInkColor(), 1, getCameraMatrix(cam), *proj->getProjectionMatrix());
-                }
-                sead::PtrArrayImpl geyser = mEventGeyser->ptrArray;
-                uint64_t *ptr = geyser.ptr;
-                Game::Coop::SpawnGeyser **arr = (Game::Coop::SpawnGeyser **)geyser.ptr;
-                sead::Vector3<float> pos = Collector::mControlledPlayer->mPosition;
-                uint32_t dist[9] = {0};
-                for (u16 idx = 0; idx < geyser.mLength; idx++)
-                {
-                    Game::Coop::SpawnGeyser *str = arr[idx];
-                    dist[idx] = (uint32_t)sqrt(pow((str->vector.mX - pos.mX), 2) + pow((str->vector.mY - pos.mY), 2) + pow((str->vector.mZ - pos.mZ), 2));
-                }
-                switch (geyser.mLength)
-                {
-                case 7:
-                    textWriter->printf("%03d %03d %03d %03d %03d %03d %03d\n", dist[0], dist[1], dist[2], dist[3], dist[4], dist[5], dist[6]);
-                    break;
-                case 8:
-                    textWriter->printf("%03d %03d %03d %03d %03d %03d %03d %03d\n", dist[0], dist[1], dist[2], dist[3], dist[4], dist[5], dist[6], dist[7]);
-                    break;
-                case 9:
-                    textWriter->printf("%03d %03d %03d %03d %03d %03d %03d %03d %03d\n", dist[0], dist[1], dist[2], dist[3], dist[4], dist[5], dist[6], dist[7], dist[8]);
-                    break;
-                default:
-                    textWriter->printf("NO GEYSER\n");
-                }
-            }
         }
 
         if (mEnemyDirector != NULL)
         {
-            textWriter->printf("EnemyAppearId: %d\n", mEnemyDirector->mEnemyAppearId);
-            if (mEnemyDirector->dword628 != NULL)
-                textWriter->printf("Valiables: %d %d %d %d\n", mEnemyDirector->dword620, read32(mEnemyDirector->dword628, 0x0), read32(mEnemyDirector->dword628, 0x4), read32(mEnemyDirector->dword628, 0x8));
-
-            textWriter->printf("ActiveMax: %02d / %02d\n", mEnemyDirector->mActiveEnemyNum, mEnemyDirector->mActiveEnemyMax);
-
-            textWriter->printf("sead::Random[0] %02d %08X %08X %08X %08X\n", size, mEnemyDirector->mRandom[0].mSeed1, mEnemyDirector->mRandom[0].mSeed2, mEnemyDirector->mRandom[0].mSeed3, mEnemyDirector->mRandom[0].mSeed4);
-
-            if (Collector::mController.isPressed(Controller::Buttons::DownDpad))
-            {
-                mPlayerDirector->pickGoldenIkura(0);
-                mPlayerDirector->bankGoldenIkura(0);
-            }
-
-            if (Collector::mController.isPressed(Controller::Buttons::LeftDpad))
-            {
-                mCoopSetting->preview.tide = mCoopSetting->present.tide;
-                mCoopSetting->present.tide = (mCoopSetting->present.tide + 1) % 3;
-                mCoopSetting->startChangeWaterLevel(0x12C);
-            }
-
-            if (Collector::mController.isPressed(Controller::Buttons::RightDpad))
-            {
-                // change event
-                mCoopSetting->present.event = (mCoopSetting->present.event + 1) % 7;
-
-                // change weather
-                mCoopSetting->preview.weather = mCoopSetting->present.event != 0 ? mCoopSetting->present.event == 5 ? 2 : 1 : 0;
-                mCoopSetting->present.weather = mCoopSetting->present.event != 0 ? mCoopSetting->present.event == 5 ? 2 : 1 : 0;
-                mCoopSetting->startChangeWeather(Game::Coop::Setting::WeatherChangePhase::Sunny, 0x12c);
+            if (Collector::mController.isPressed(Controller::Buttons::LStick))
                 mEventDirector->start();
-            }
+            if (Collector::mController.isPressed(Controller::Buttons::RightDpad))
+                mCoopSetting->present.event = 1;
+            if (Collector::mController.isPressed(Controller::Buttons::LeftDpad))
+                mCoopSetting->present.event = 5;
         }
     }
 

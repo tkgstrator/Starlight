@@ -1,4 +1,4 @@
-from ftplib import FTP
+import ftplib
 import os
 import sys
 
@@ -34,10 +34,12 @@ def listdirs(connection,_path):
 
 
 def ensuredirectory(connection,root,path):
-    print(f"Ensuring {os.path.join(root, path)} exists...")
+    print(f"Ensuring {os.path.join(root, path)}...", end="")
     if path not in listdirs(connection, root):
+        print("not exists")
         connection.mkd(f'{root}/{path}')
-
+    else:
+        print("exists")
 
 consoleIP = sys.argv[1]
 if '.' not in consoleIP:
@@ -57,40 +59,43 @@ else:
     version = sys.argv[3]
 
 curDir = os.curdir
-
-ftp = FTP()
-print(f'Connecting to {consoleIP}... ', end='')
-ftp.connect(consoleIP, consolePort)
-print('Connected!')
-
 patchDirectories = []
 
-root, dirs, _ = next(os.walk(curDir))
-for dir in dirs:
-    if dir.startswith("starlight_patch_"):
-        patchDirectories.append((os.path.join(root, dir), dir))
-
-ensuredirectory(ftp, '', 'atmosphere')
-ensuredirectory(ftp, '/atmosphere', 'exefs_patches')
-
-for patchDir in patchDirectories:
-    dirPath = patchDir[0]
-    dirName = patchDir[1]
-    ensuredirectory(ftp, '/atmosphere/exefs_patches', patchDir[1])
-    _, _, files = next(os.walk(dirPath))
-    for file in files:
-        fullPath = os.path.join(dirPath, file)
-        if os.path.exists(fullPath):
-            sdPath = f'/atmosphere/exefs_patches/{dirName}/{file}'
+with ftplib.FTP() as ftp:
+    try:
+        # FTP settings
+        ftp.connect(host=consoleIP, port=consolePort, timeout=5)
+        # Login
+        ftp.login("tkgling", "starlight")
+        root, dirs, _ = next(os.walk(curDir))
+        for dir in dirs:
+            if dir.startswith("starlight_patch_"):
+                patchDirectories.append((os.path.join(root, dir), dir))
+        
+        # starlight_patch
+        ensuredirectory(ftp, '/', 'atmosphere')
+        ensuredirectory(ftp, '/atmosphere', 'exefs_patches')
+        for patchDir in patchDirectories:
+            dirPath = patchDir[0]
+            dirName = patchDir[1]
+            ensuredirectory(ftp, '/atmosphere/exefs_patches', dirName)
+            
+            _, _, patches = next(os.walk(dirPath))
+            for patch in patches:
+                fullPath = os.path.join(dirPath, patch)
+                if os.path.exists(fullPath):
+                    sdPath = f'/atmosphere/exefs_patches/{dirName}/{patch}'
+                    with open(fullPath, 'rb') as fp:
+                        ftp.storbinary(f'STOR {sdPath}', fp)
+        # subsdk0
+        ensuredirectory(ftp, '/atmosphere', 'contents')
+        ensuredirectory(ftp, '/atmosphere/contents', titleIdLookup[romType])
+        ensuredirectory(ftp, f'/atmosphere/contents/{titleIdLookup[romType]}', 'exefs')
+        binaryPath = f'{os.path.basename(os.getcwd())}{version}.nso'
+        if os.path.isfile(binaryPath):
+            sdPath = f'/atmosphere/contents/{titleIdLookup[romType]}/exefs/subsdk0'
             print(f'Sending {sdPath}')
-            ftp.storbinary(f'STOR {sdPath}', open(fullPath, 'rb'))
-
-ensuredirectory(ftp, '/atmosphere', 'contents')
-ensuredirectory(ftp, '/atmosphere/contents', titleIdLookup[romType])
-ensuredirectory(ftp, f'/atmosphere/contents/{titleIdLookup[romType]}', 'exefs')
-
-binaryPath = f'{os.path.basename(os.getcwd())}{version}.nso'
-if os.path.isfile(binaryPath):
-    sdPath = f'/atmosphere/contents/{titleIdLookup[romType]}/exefs/subsdk0'
-    print(f'Sending {sdPath}')
-    ftp.storbinary(f'STOR {sdPath}', open(binaryPath, 'rb'))
+            ftp.storbinary(f'STOR {sdPath}', open(binaryPath, 'rb'))
+    except ftplib.all_errors as e:
+        print(e)
+        sys.exit(1)
