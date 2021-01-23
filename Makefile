@@ -5,8 +5,8 @@
 
 S2VER ?= 310
 S2VERSTR ?= 3.1.0
-S2ROMTYPE ?= TrialUS20
-IP ?= 192.168.10.101
+S2ROMTYPE ?= TrialJP20
+IP ?= 192.168.1.21
 all:
 	@docker run --rm -v $(PWD):/home/starlight/Starlight -it tkgling/starlight
 
